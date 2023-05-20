@@ -1,4 +1,6 @@
-add_executable(morse morse.cpp)
+add_executable(morse 
+    main.cpp
+    MorseRenderer.cpp)
 
 # pull in common dependencies
 target_link_libraries(morse pico_stdlib)
