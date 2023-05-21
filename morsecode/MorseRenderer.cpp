@@ -1,6 +1,6 @@
 #include "MorseRenderer.hpp"
 
-const std::map<char, std::string> MorseRenderer::MorseMap(
+const std::map<char, const std::string> MorseRenderer::MorseMap(
     {{'A', ".-"},
      {'B', "-..."},
      {'C', "-.-."},
@@ -39,7 +39,7 @@ const std::map<char, std::string> MorseRenderer::MorseMap(
      {'0', "-----"},
      {' ', " "}});
 
-void MorseRenderer::Render(std::string inputString)
+void MorseRenderer::Render(const std::string &inputString)
 {
     for (char inputChar : inputString)
     {

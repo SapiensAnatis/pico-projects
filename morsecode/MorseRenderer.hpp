@@ -10,7 +10,7 @@
 class MorseRenderer
 {
 public:
-    void Render(std::string inputString);
+    void Render(const std::string &inputString);
 
 protected:
     static constexpr uint16_t DitDuration = 200; // Milliseconds
@@ -26,7 +26,7 @@ protected:
 private:
     void Space();
 
-    static const std::map<char, std::string> MorseMap;
+    static const std::map<char, const std::string> MorseMap;
 };
 
 class LEDRenderer : public MorseRenderer
