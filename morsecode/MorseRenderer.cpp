@@ -63,9 +63,9 @@ void MorseRenderer::Render(std::string inputString)
             }
             sleep_ms(signalSpaceDuration);
         }
-
         sleep_ms(charSpaceDuration);
     }
+    sleep_ms(wordSpaceDuration);
 }
 
 void MorseRenderer::Space()

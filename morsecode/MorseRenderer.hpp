@@ -13,7 +13,7 @@ public:
     void Render(std::string inputString);
 
 protected:
-    static constexpr uint16_t ditDuration = 500;
+    static constexpr uint16_t ditDuration = 100; // Milliseconds
     static constexpr uint16_t dahDuration = ditDuration * 3;
 
     static constexpr uint16_t signalSpaceDuration = ditDuration;
