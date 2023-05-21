@@ -3,6 +3,9 @@
 
 int main()
 {
-    MorseRenderer<500> *renderer = new LEDRenderer<500>();
-    renderer->Render("test");
+    MorseRenderer *renderer = new LEDRenderer();
+    while (true)
+    {
+        renderer->Render("test");
+    }
 }
