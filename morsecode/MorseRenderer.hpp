@@ -13,12 +13,12 @@ public:
     void Render(std::string inputString);
 
 protected:
-    static constexpr uint16_t ditDuration = 100; // Milliseconds
-    static constexpr uint16_t dahDuration = ditDuration * 3;
+    static constexpr uint16_t DitDuration = 200; // Milliseconds
+    static constexpr uint16_t DahDuration = DitDuration * 3;
 
-    static constexpr uint16_t signalSpaceDuration = ditDuration;
-    static constexpr uint16_t charSpaceDuration = ditDuration * 3;
-    static constexpr uint16_t wordSpaceDuration = ditDuration * 7;
+    static constexpr uint16_t SignalSpaceDuration = DitDuration;
+    static constexpr uint16_t CharSpaceDuration = DitDuration * 3;
+    static constexpr uint16_t WordSpaceDuration = DitDuration * 7;
 
     virtual void Dit() = 0;
     virtual void Dah() = 0;
@@ -26,7 +26,7 @@ protected:
 private:
     void Space();
 
-    static const std::map<char, std::string> morseMap;
+    static const std::map<char, std::string> MorseMap;
 };
 
 class LEDRenderer : public MorseRenderer
@@ -38,7 +38,7 @@ private:
     void Dit();
     void Dah();
 
-    const uint LED_PIN = PICO_DEFAULT_LED_PIN;
+    static const uint LedPin = PICO_DEFAULT_LED_PIN;
 };
 
 #endif

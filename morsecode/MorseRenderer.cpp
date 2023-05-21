@@ -1,6 +1,6 @@
 #include "MorseRenderer.hpp"
 
-const std::map<char, std::string> MorseRenderer::morseMap(
+const std::map<char, std::string> MorseRenderer::MorseMap(
     {{'A', ".-"},
      {'B', "-..."},
      {'C', "-.-."},
@@ -44,7 +44,7 @@ void MorseRenderer::Render(std::string inputString)
     for (char inputChar : inputString)
     {
         char lookup = toupper(inputChar);
-        const std::string morseString = morseMap.at(lookup);
+        const std::string morseString = MorseMap.at(lookup);
         for (char morseChar : morseString)
         {
             switch (morseChar)
@@ -61,34 +61,34 @@ void MorseRenderer::Render(std::string inputString)
             default:
                 break;
             }
-            sleep_ms(signalSpaceDuration);
+            sleep_ms(SignalSpaceDuration);
         }
-        sleep_ms(charSpaceDuration);
+        sleep_ms(CharSpaceDuration);
     }
-    sleep_ms(wordSpaceDuration);
+    sleep_ms(WordSpaceDuration);
 }
 
 void MorseRenderer::Space()
 {
-    sleep_ms(wordSpaceDuration);
+    sleep_ms(WordSpaceDuration);
 }
 
 LEDRenderer::LEDRenderer()
 {
-    gpio_init(LED_PIN);
-    gpio_set_dir(LED_PIN, GPIO_OUT);
+    gpio_init(LedPin);
+    gpio_set_dir(LedPin, GPIO_OUT);
 }
 
 void LEDRenderer::Dit()
 {
-    gpio_put(LED_PIN, 1);
-    sleep_ms(MorseRenderer::ditDuration);
-    gpio_put(LED_PIN, 0);
+    gpio_put(LedPin, 1);
+    sleep_ms(MorseRenderer::DitDuration);
+    gpio_put(LedPin, 0);
 }
 
 void LEDRenderer::Dah()
 {
-    gpio_put(LED_PIN, 1);
-    sleep_ms(MorseRenderer::dahDuration);
-    gpio_put(LED_PIN, 0);
+    gpio_put(LedPin, 1);
+    sleep_ms(MorseRenderer::DahDuration);
+    gpio_put(LedPin, 0);
 }
