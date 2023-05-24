@@ -1,61 +1,46 @@
 #include "MorseRenderer.hpp"
 
-const std::map<char, const std::string> MorseRenderer::MorseMap(
-    {{'A', ".-"},
-     {'B', "-..."},
-     {'C', "-.-."},
-     {'D', "-.."},
-     {'E', "."},
-     {'F', "..-."},
-     {'G', "--."},
-     {'H', "...."},
-     {'I', ".."},
-     {'J', ".---"},
-     {'K', "-.-"},
-     {'L', ".-.."},
-     {'M', "--"},
-     {'N', "-."},
-     {'O', "---"},
-     {'P', ".--."},
-     {'Q', "--.-"},
-     {'R', ".-."},
-     {'S', "..."},
-     {'T', "-"},
-     {'U', "..-"},
-     {'V', "...-"},
-     {'W', ".--"},
-     {'X', "-..-"},
-     {'Y', "-.--"},
-     {'Z', "--.."},
-     {'1', ".----"},
-     {'2', "..---"},
-     {'3', "...--"},
-     {'4', "....-"},
-     {'5', "....."},
-     {'6', "-...."},
-     {'7', "--..."},
-     {'8', "---.."},
-     {'9', "----."},
-     {'0', "-----"},
-     {' ', " "}});
+const std::string MorseRenderer::GetMorse(char inputChar)
+{
+    char lookupChar = toupper(inputChar);
+    MorseCharacter encoded;
+
+    if (lookupChar <= '9')
+    {
+        encoded = Digits[lookupChar - '0'];
+    }
+    else
+    {
+        encoded = Letters[lookupChar - 'A'];
+    }
+
+    return DecodeMorse(encoded);
+}
 
 void MorseRenderer::Render(const std::string &inputString)
 {
     for (char inputChar : inputString)
     {
-        char lookup = toupper(inputChar);
-        const std::string morseString = MorseMap.at(lookup);
+        // Spaces are not encoded in the list of characters
+        if (inputChar == ' ')
+        {
+            Space();
+            continue;
+        }
+
+        const std::string morseString = GetMorse(inputChar);
+
         for (char morseChar : morseString)
         {
             switch (morseChar)
             {
-            case '.':
+            case DotCharacter:
                 Dit();
                 break;
-            case '-':
+            case DashCharacter:
                 Dah();
                 break;
-            case ' ':
+            case SpaceCharacter:
                 Space();
                 break;
             default:

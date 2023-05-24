@@ -6,6 +6,6 @@ int main()
     MorseRenderer *renderer = new LEDRenderer();
     while (true)
     {
-        renderer->Render("42");
+        renderer->Render("J");
     }
 }

@@ -7,3 +7,4 @@ target_link_libraries(morse pico_stdlib)
 pico_add_extra_outputs(morse)
 
 set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
+
