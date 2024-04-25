@@ -28,7 +28,7 @@ static constexpr MorseCharacter EncodeMorse(const char *morse)
     return result;
 }
 
-static const std::string DecodeMorse(const MorseCharacter &morse)
+static const std::string DecodeMorse(const MorseCharacter morse)
 {
     std::string result;
     result.reserve(morse.MorseLen);
@@ -103,18 +103,6 @@ private:
         EncodeMorse("-.--"), // Y
         EncodeMorse("--.."), // Z
     };
-};
-
-class LEDRenderer : public MorseRenderer
-{
-public:
-    LEDRenderer();
-
-private:
-    void Dit();
-    void Dah();
-
-    static const uint LedPin = PICO_DEFAULT_LED_PIN;
 };
 
 #endif

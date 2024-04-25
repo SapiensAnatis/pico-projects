@@ -1,9 +1,9 @@
 #include "pico/stdlib.h"
-#include "MorseRenderer.hpp"
+#include "LEDRendererW.hpp"
 
 int main()
 {
-    MorseRenderer *renderer = new LEDRenderer();
+    MorseRenderer *renderer = new LEDRendererW();
     while (true)
     {
         renderer->Render("J");

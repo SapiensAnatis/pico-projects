@@ -1,7 +1,7 @@
-add_executable(morse main.cpp MorseRenderer.cpp)
+add_executable(morse main.cpp MorseRenderer.cpp LEDRendererW.cpp)
 
 # pull in common dependencies
-target_link_libraries(morse pico_stdlib)
+target_link_libraries(morse pico_stdlib pico_cyw43_arch_none) 
 
 # create map/bin/hex file etc.
 pico_add_extra_outputs(morse)
