@@ -1,3 +1,5 @@
+#if PICO_W
+
 #include "LEDRendererW.hpp"
 #include "pico/cyw43_arch.h"
 
@@ -24,3 +26,5 @@ void LEDRendererW::Dah()
     sleep_ms(MorseRenderer::DahDuration);
     cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
 }
+
+#endif

@@ -1,3 +1,5 @@
+#if PICO
+
 #ifndef LEDRendererHpp
 #define LEDRendererHpp
 
@@ -18,5 +20,7 @@ private:
 
     static const uint LedPin = PICO_DEFAULT_LED_PIN;
 };
+
+#endif
 
 #endif

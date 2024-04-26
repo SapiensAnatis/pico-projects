@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 set(PICO_BOARD pico_w)
+add_compile_definitions(PICO_W)
 
 # Pull in SDK (must be before project)
 include(pico_sdk_import.cmake)

@@ -1,3 +1,5 @@
+#if PICO_W
+
 #ifndef LEDRendererWHpp
 #define LEDRendererWHpp
 
@@ -14,5 +16,7 @@ private:
     void Dit();
     void Dah();
 };
+
+#endif
 
 #endif

@@ -1,3 +1,5 @@
+#if PICO
+
 #include "LEDRenderer.hpp"
 
 LEDRenderer::LEDRenderer()
@@ -19,3 +21,5 @@ void LEDRenderer::Dah()
     sleep_ms(MorseRenderer::DahDuration);
     gpio_put(LedPin, 0);
 }
+
+#endif
