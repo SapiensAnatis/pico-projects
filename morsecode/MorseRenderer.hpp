@@ -3,7 +3,6 @@
 
 #include <string>
 #include <cstdint>
-#include "pico/stdlib.h"
 
 struct MorseCharacter
 {

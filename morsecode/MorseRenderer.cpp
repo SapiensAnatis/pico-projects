@@ -1,4 +1,5 @@
 #include "MorseRenderer.hpp"
+#include "pico/stdlib.h"
 
 const std::string MorseRenderer::GetMorse(char inputChar)
 {
