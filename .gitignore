@@ -48,3 +48,5 @@ generated
 build
 elf2uf2
 pioasm
+
+wifi_credentials.cmake

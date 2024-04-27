@@ -11,7 +11,7 @@
             ],
             "compilerPath": "/home/jay/PicoProjects/arm-gnu-toolchain-13.2.Rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-gcc",
             "cStandard": "gnu17",
-            "cppStandard": "gnu++17",
+            "cppStandard": "gnu++20",
             "intelliSenseMode": "linux-gcc-arm",
             "configurationProvider": "ms-vscode.cmake-tools"
         }

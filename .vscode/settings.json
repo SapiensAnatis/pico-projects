@@ -16,6 +16,9 @@
   },
   "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
   "files.associations": {
-    "cstdint": "cpp"
+    "*.h": "c",
+    "*.hpp": "cpp",
+    "*.c": "c",
+    "*.cpp": "cpp"
   },
 }
