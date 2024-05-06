@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 set(PICO_BOARD pico_w)
+set(PICO_DEOPTIMIZED_DEBUG 1)
 
 if (PICO_BOARD STREQUAL pico_w)
     add_compile_definitions(PICO_W)
@@ -23,7 +24,17 @@ endif()
 pico_sdk_init()
 
 add_subdirectory(morsecode)
-add_subdirectory(bin_unicorn)
+
+include(wifi_credentials.cmake OPTIONAL)
+
+if (DEFINED WIFI_SSID AND DEFINED WIFI_PASSWORD)
+    message("Detected WIFI_SSD and WIFI_PASSWORD. Including networking-enabled projects.")
+    add_subdirectory(bin_unicorn)
+else()
+    message(WARNING "WIFI_SSD and/or WIFI_PASSWORD not set. Skipping configuration of projects that require networking. "
+                    "To build these projects, create a file called wifi_credentials.cmake at the repository root which "
+                    "sets these variables.")
+endif()
 
 add_compile_options(-Wall
         -Wno-format          # int != int32_t as far as the compiler is concerned because gcc has int32_t as long int
