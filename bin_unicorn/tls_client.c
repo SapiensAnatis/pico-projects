@@ -1,14 +1,13 @@
 /*
- * Copyright (c) 2023 Raspberry Pi (Trading) Ltd.
- *
- * SPDX-License-Identifier: BSD-3-Clause
+ * Adapted from pico_w/wifi/tls_client/tls_verify.c of https://github.com/raspberrypi/pico-examples/blob/eca13acf57916a0bd5961028314006983894fc84/pico_w/wifi/tls_client/tls_verify.c
+ * Additional credit to Micheal Bell for https_get: https://github.com/MichaelBell/Picodon/blob/08d30cfb9d10d6afd966fdd4f9210867cf3bb461/tls_client.c#L268
  */
 
 #define TLS_CLIENT_HTTP_REQUEST "GET %s HTTP/1.1\r\n"   \
                                 "Host: %s\r\n"          \
                                 "Connection: close\r\n" \
                                 "\r\n"
-#define TLS_CLIENT_TIMEOUT_SECS 15
+#define TLS_CLIENT_TIMEOUT_SECS 30
 #define TLS_ROOT_CERT "-----BEGIN CERTIFICATE-----\n\
 MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw\n\
 TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh\n\
@@ -249,7 +248,6 @@ static TLS_CLIENT_T *tls_client_init(void)
     return state;
 }
 
-// Adapted from: https://github.com/MichaelBell/Picodon/blob/08d30cfb9d10d6afd966fdd4f9210867cf3bb461/tls_client.c#L268
 int https_get(const char *hostname, const char *uri, const char *headers, char *restrict buffer, int buffer_len)
 {
     const uint8_t cert_ok[] = TLS_ROOT_CERT;
