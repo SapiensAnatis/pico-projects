@@ -44,10 +44,12 @@ int main()
         sleep_ms(3000);
     }
 
+    RBCClient client;
+
     std::vector<char> response_buffer;
     response_buffer.reserve(2048);
 
-    int result = fetch_collection_data("89%20Hamilton%20Road%20Reading,%20RG15RB", response_buffer);
+    int result = client.fetch_collection_data("89%20Hamilton%20Road%20Reading,%20RG15RB", response_buffer);
 
     if (result != 0)
     {
@@ -56,7 +58,7 @@ int main()
 
     std::cout << "Fetching second response" << std::endl;
 
-    result = fetch_collection_data("89%20Hamilton%20Road%20Reading,%20RG15RB", response_buffer);
+    result = client.fetch_collection_data("89%20Hamilton%20Road%20Reading,%20RG15RB", response_buffer);
 
     if (result != 0)
     {

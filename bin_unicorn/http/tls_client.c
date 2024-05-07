@@ -22,6 +22,7 @@
 #include "lwip/dns.h"
 #include "lwip/tcpbase.h"
 #include "tls_client.h"
+#include "mbedtls/debug.h"
 
 typedef struct TLS_CLIENT_T_
 {
@@ -36,6 +37,16 @@ typedef struct TLS_CLIENT_T_
 } TLS_CLIENT_T;
 
 static struct altcp_tls_config *tls_config = NULL;
+
+static void my_debug(void *ctx, int level,
+                     const char *file, int line,
+                     const char *str)
+{
+    ((void)level);
+
+    fprintf((FILE *)ctx, "%s:%04d: %s", file, line, str);
+    fflush((FILE *)ctx);
+}
 
 static err_t tls_client_close(void *arg)
 {
@@ -162,21 +173,9 @@ static void tls_client_dns_found(const char *hostname, const ip_addr_t *ipaddr, 
 
 static bool tls_client_open(const char *hostname, void *arg)
 {
+    TLS_CLIENT_T *state = (TLS_CLIENT_T *)arg;
     err_t err;
     ip_addr_t server_ip;
-    TLS_CLIENT_T *state = (TLS_CLIENT_T *)arg;
-
-    state->pcb = altcp_tls_new(tls_config, IPADDR_TYPE_ANY);
-    if (!state->pcb)
-    {
-        printf("failed to create pcb\n");
-        return false;
-    }
-
-    altcp_arg(state->pcb, state);
-    altcp_poll(state->pcb, tls_client_poll, state->timeout * 2);
-    altcp_recv(state->pcb, tls_client_recv);
-    altcp_err(state->pcb, tls_client_err);
 
     /* Set SNI */
     mbedtls_ssl_set_hostname(altcp_tls_context(state->pcb), hostname);
@@ -216,10 +215,29 @@ static TLS_CLIENT_T *tls_client_init(void)
         return NULL;
     }
 
+    state->pcb = altcp_tls_new(tls_config, IPADDR_TYPE_ANY);
+    if (!state->pcb)
+    {
+        printf("failed to create pcb\n");
+        return false;
+    }
+
+    altcp_arg(state->pcb, state);
+    altcp_poll(state->pcb, tls_client_poll, state->timeout * 2);
+    altcp_recv(state->pcb, tls_client_recv);
+    altcp_err(state->pcb, tls_client_err);
+
+    // Enable renegotiation via session tickets. The TLS handshake is particularly intensive on the RP2040 and takes
+    // 10+ seconds. Could potentially be improved by TLS 1.3 but this is not yet supported in lwIP.
+    mbedtls_ssl_conf_session_tickets(altcp_tls_context(state->pcb), MBEDTLS_SSL_SESSION_TICKETS_ENABLED);
+    mbedtls_ssl_conf_renegotiation(altcp_tls_context(state->pcb), MBEDTLS_SSL_RENEGOTIATION_ENABLED);
+    mbedtls_debug_set_threshold(3);
+    mbedtls_ssl_conf_dbg(altcp_tls_context(state->pcb), my_debug, stdout);
+
     return state;
 }
 
-int32_t https_get(TLS_CLIENT_REQUEST request, char *restrict buffer, uint16_t buffer_len)
+int32_t https_get(TLS_CLIENT_REQUEST request, char *restrict buffer, uint16_t buffer_len, TLS_CLIENT_SESSION_STATE_T *session_state)
 {
     tls_config = altcp_tls_create_config_client(request.cert, request.cert_len);
 
@@ -237,6 +255,12 @@ int32_t https_get(TLS_CLIENT_REQUEST request, char *restrict buffer, uint16_t bu
     state->response = buffer;
     state->response_buffer_len = buffer_len;
 
+    if (session_state->has_session)
+    {
+        printf("Using stored session");
+        mbedtls_ssl_set_session(altcp_tls_context(state->pcb), session_state->session);
+    }
+
     if (!tls_client_open(request.hostname, state))
     {
         return -2;
@@ -253,6 +277,18 @@ int32_t https_get(TLS_CLIENT_REQUEST request, char *restrict buffer, uint16_t bu
     if (state->error != 0)
     {
         return state->error;
+    }
+
+    int wrote_session = mbedtls_ssl_get_session(altcp_tls_context(state->pcb), session_state->session);
+
+    if (wrote_session == 0)
+    {
+        session_state->has_session = true;
+    }
+    else
+    {
+        printf("Warning: failed to save TLS session!");
+        session_state->has_session = false;
     }
 
     int response_length = state->response_cursor;

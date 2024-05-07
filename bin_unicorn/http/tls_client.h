@@ -11,6 +11,12 @@ typedef struct TLS_CLIENT_REQUEST_T_
     size_t cert_len;
 } TLS_CLIENT_REQUEST;
 
+typedef struct TLS_CLIENT_SESSION_STATE_T_
+{
+    mbedtls_ssl_session *session;
+    bool has_session;
+} TLS_CLIENT_SESSION_STATE_T;
+
 /// @brief Send a HTTPS GET request.
 /// @param request Request details.
 /// @param buffer Buffer to write the response to.
@@ -21,6 +27,6 @@ typedef struct TLS_CLIENT_REQUEST_T_
 ///   * -2: Failed to resolve DNS & open connection, or the tls_client_err callback was hit.
 ///   * -3: Failed to allocate client state.
 ///   * -4: Request was apparently successful, but no bytes were written to the buffer.
-int32_t https_get(TLS_CLIENT_REQUEST request, char *buffer, uint16_t buffer_len);
+int32_t https_get(TLS_CLIENT_REQUEST request, char *buffer, uint16_t buffer_len, TLS_CLIENT_SESSION_STATE_T *session_state);
 
 #endif // HTTP_TLS_CLIENT_H_

@@ -4,14 +4,19 @@
 #include <vector>
 #include <format>
 
-extern "C"
-{
-#include "tls_client.h"
-}
 #include "config.hpp"
 #include "fetch_data.hpp"
 
-int32_t fetch_collection_data(const std::string &url_encoded_address, std::vector<char> &buffer)
+RBCClient::RBCClient()
+{
+
+    this->tls_session_state = (TLS_CLIENT_SESSION_STATE_T *)calloc(1, sizeof(TLS_CLIENT_SESSION_STATE_T));
+
+    this->tls_session_state->session = (mbedtls_ssl_session *)calloc(1, sizeof(mbedtls_ssl_session));
+    this->tls_session_state->has_session = false;
+}
+
+int32_t RBCClient::fetch_collection_data(const std::string &url_encoded_address, std::vector<char> &buffer)
 {
     const auto uri = std::format("/rbc/mycollections/{}", url_encoded_address);
     constexpr uint8_t cert[] = READING_GOV_UK_ROOT_CERT;
@@ -31,16 +36,17 @@ int32_t fetch_collection_data(const std::string &url_encoded_address, std::vecto
     int32_t result = https_get(
         request,
         buffer.data(),
-        buffer.capacity());
-
-    if (result < 0)
-    {
-        std::cout << "Request failed with error code " << result << std::endl;
-        return result;
-    }
+        buffer.capacity(),
+        this->tls_session_state);
 
     auto end = std::chrono::high_resolution_clock::now();
     auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+    if (result < 0)
+    {
+        std::cout << "Request failed with error code " << result << " after " << milliseconds.count() << " ms" << std::endl;
+        return result;
+    }
 
     std::cout << "Request completed in " << milliseconds.count() << " ms" << std::endl;
 

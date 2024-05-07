@@ -68,4 +68,9 @@
 // Debug
 #define MBEDTLS_DEBUG_C
 
+// Needed to enable a cipher suite that can be used to handshake successfully with api.reading.gov.uk
 #define MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED
+
+// Save time when renegotiating TLS
+#define MBEDTLS_SSL_SESSION_TICKETS
+#define MBEDTLS_SSL_RENEGOTIATION
