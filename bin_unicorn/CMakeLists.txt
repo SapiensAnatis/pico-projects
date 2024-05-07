@@ -7,7 +7,7 @@ include(${PIMORONI_PICO_PATH}/libraries/hershey_fonts/hershey_fonts.cmake)
 include(${PIMORONI_PICO_PATH}/libraries/pico_explorer/pico_explorer.cmake)
 include(${PIMORONI_PICO_PATH}/libraries/pico_unicorn/pico_unicorn.cmake)
 
-add_executable(bin_unicorn tls_client.c main.cpp)
+add_executable(bin_unicorn http/tls_client.c http/fetch_data.cpp main.cpp)
 
 target_compile_definitions(bin_unicorn PRIVATE
     WIFI_SSID=\"${WIFI_SSID}\"
@@ -29,6 +29,7 @@ target_link_libraries(bin_unicorn
 target_include_directories(bin_unicorn PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
     ${CMAKE_CURRENT_LIST_DIR}/..
+    ${CMAKE_SOURCE_DIR}/lib/cJSON
 )
 
 pico_add_extra_outputs(bin_unicorn)

@@ -3,22 +3,11 @@
 
 #include "pico_unicorn.hpp"
 #include "pico/cyw43_arch.h"
-
-extern "C"
-{
-#include "tls_client.h"
-}
+#include "http/fetch_data.hpp"
 
 using namespace pimoroni;
 
 PicoUnicorn pico_unicorn;
-
-#ifndef WIFI_SSID
-#error Need to set WIFI_SSID
-#endif
-#ifndef WIFI_PASSWORD
-#error Need to set WIFI_PASSWORD
-#endif
 
 bool connect_wifi()
 {
@@ -52,26 +41,27 @@ int main()
     while (!connect_wifi())
     {
         cyw43_arch_deinit();
-        sleep_ms(10000);
+        sleep_ms(3000);
     }
 
-    auto buffer = new std::vector<char>();
-    buffer->reserve(1024);
+    std::vector<char> response_buffer;
+    response_buffer.reserve(2048);
 
-    auto start = std::chrono::high_resolution_clock::now();
-    int result = https_get(
-        "api.reading.gov.uk",
-        "/uk/1",
-        "",
-        buffer->data(),
-        buffer->capacity());
-    auto end = std::chrono::high_resolution_clock::now();
+    int result = fetch_collection_data("89%20Hamilton%20Road%20Reading,%20RG15RB", response_buffer);
 
-    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    std::cout << "Request finished in " << milliseconds.count() << " ms" << std::endl;
+    if (result != 0)
+    {
+        return -1;
+    }
 
-    pico_unicorn.set_pixel(0, 0, 255, 0, 0);
-    pico_unicorn.set_pixel(1, 1, 255, 0, 0);
+    std::cout << "Fetching second response" << std::endl;
+
+    result = fetch_collection_data("89%20Hamilton%20Road%20Reading,%20RG15RB", response_buffer);
+
+    if (result != 0)
+    {
+        return -1;
+    }
 
     cyw43_arch_deinit();
 
