@@ -1,8 +1,7 @@
 #include <string>
-#include <chrono>
 #include <iostream>
 #include <vector>
-#include <format>
+#include <chrono>
 
 extern "C"
 {
@@ -11,9 +10,9 @@ extern "C"
 #include "config.hpp"
 #include "fetch_data.hpp"
 
-int32_t fetch_collection_data(const std::string &url_encoded_address, std::vector<char> &buffer)
+int8_t fetch_collection_data(const std::string &url_encoded_address, std::vector<char> &buffer)
 {
-    const auto uri = std::format("/rbc/mycollections/{}", url_encoded_address);
+    const auto uri = "/rbc/mycollections/" + url_encoded_address;
     constexpr uint8_t cert[] = READING_GOV_UK_ROOT_CERT;
 
     TLS_CLIENT_REQUEST request = {
@@ -28,7 +27,7 @@ int32_t fetch_collection_data(const std::string &url_encoded_address, std::vecto
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    int32_t result = https_get(
+    int8_t result = https_get(
         request,
         buffer.data(),
         buffer.capacity());

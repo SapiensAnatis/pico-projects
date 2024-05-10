@@ -2,12 +2,14 @@ include(../pimoroni_pico_import.cmake)
 
 include(${PIMORONI_PICO_PATH}/common/pimoroni_i2c.cmake)
 include(${PIMORONI_PICO_PATH}/common/pimoroni_bus.cmake)
-include(${PIMORONI_PICO_PATH}/libraries/bitmap_fonts/bitmap_fonts.cmake)
-include(${PIMORONI_PICO_PATH}/libraries/hershey_fonts/hershey_fonts.cmake)
-include(${PIMORONI_PICO_PATH}/libraries/pico_explorer/pico_explorer.cmake)
 include(${PIMORONI_PICO_PATH}/libraries/pico_unicorn/pico_unicorn.cmake)
 
-add_executable(bin_unicorn http/tls_client.c http/fetch_data.cpp main.cpp)
+add_executable(bin_unicorn 
+    http/tls_client.c 
+    http/fetch_data.cpp 
+    parsing/parsing.cpp 
+    ../lib/cJSON/cJSON.c
+    main.cpp)
 
 include(address.cmake)
 
@@ -23,7 +25,6 @@ target_link_libraries(bin_unicorn
     pico_mbedtls
     pico_stdlib
     hardware_pio
-	hardware_pwm
     hardware_dma
     pico_graphics
     pico_unicorn
@@ -33,6 +34,7 @@ target_include_directories(bin_unicorn PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
     ${CMAKE_CURRENT_LIST_DIR}/..
     ${CMAKE_SOURCE_DIR}/lib/cJSON
+    ${CMAKE_SOURCE_DIR}/lib/date/include
 )
 
 pico_add_extra_outputs(bin_unicorn)

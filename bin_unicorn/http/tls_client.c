@@ -8,7 +8,7 @@
                                   "Connection: close\r\n" \
                                   "%s\r\n"                \
                                   "\r\n"
-#define TLS_CLIENT_TIMEOUT_SECS 30
+#define TLS_CLIENT_TIMEOUT_SECS 60
 
 #include <string.h>
 #include <time.h>
@@ -122,7 +122,9 @@ static err_t tls_client_recv(void *arg, struct altcp_pcb *pcb, struct pbuf *p, e
             buffer[copy_len] = 0;
             state->response_cursor += copy_len;
 
+#ifdef DEBUG
             printf("***\nnew data received from server:\n***\n\n%s\n", buffer);
+#endif
         }
 
         altcp_recved(pcb, p->tot_len);
@@ -219,7 +221,7 @@ static TLS_CLIENT_T *tls_client_init(void)
     return state;
 }
 
-int32_t https_get(TLS_CLIENT_REQUEST request, char *restrict buffer, uint16_t buffer_len)
+int8_t https_get(TLS_CLIENT_REQUEST request, char *restrict buffer, uint16_t buffer_len)
 {
     tls_config = altcp_tls_create_config_client(request.cert, request.cert_len);
 
@@ -265,5 +267,5 @@ int32_t https_get(TLS_CLIENT_REQUEST request, char *restrict buffer, uint16_t bu
         return -4;
     }
 
-    return response_length;
+    return 0;
 }

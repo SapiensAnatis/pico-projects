@@ -1,9 +1,9 @@
 #include <iostream>
-#include <chrono>
 
 #include "pico_unicorn.hpp"
 #include "pico/cyw43_arch.h"
 #include "http/fetch_data.hpp"
+#include "parsing/parsing.hpp"
 
 using namespace pimoroni;
 
@@ -36,8 +36,6 @@ int main()
 {
     stdio_init_all();
 
-    std::cout << "Hello world from main.cpp" << std::endl;
-
     while (!connect_wifi())
     {
         cyw43_arch_deinit();
@@ -47,21 +45,39 @@ int main()
     std::vector<char> response_buffer;
     response_buffer.reserve(2048);
 
-    int result = fetch_collection_data(BIN_UNICORN_HOME_ADDRESS, response_buffer);
-
-    if (result != 0)
+    int fetch_result = fetch_collection_data(BIN_UNICORN_HOME_ADDRESS, response_buffer);
+    if (fetch_result != 0)
     {
+        std::cout << "Failed to fetch collection data: error " << fetch_result << '\n';
         return -1;
     }
 
-    std::cout << "Fetching second response" << std::endl;
-
-    result = fetch_collection_data(BIN_UNICORN_HOME_ADDRESS, response_buffer);
-
-    if (result != 0)
+    // This is not really standards-compliant but it seems to work for now.
+    // TODO: Be a bit more intelligent and read the Content-Length header instead
+    if (response_buffer.back() != 0)
     {
+        std::cout << "Response buffer was not null-terminated - this is not supported.\n";
         return -1;
     }
+
+    std::string_view response_view(response_buffer.data());
+    int body_start = response_view.find("\r\n\r\n");
+    int nr = response_view.find("OK");
+    if (body_start == std::string::npos)
+    {
+        std::cout << "Failed to find start of response body\n";
+        return -1;
+    }
+
+    BinCollection next_collection;
+    int parse_result = parse_response(response_view.substr(body_start), next_collection);
+    if (parse_result != 0)
+    {
+        std::cout << "Failed to parse response: error " << parse_result << '\n';
+        return -1;
+    }
+
+    std::cout << "Next bin collection is " << (int32_t)next_collection.collection_type << " on " << next_collection.date << '\n';
 
     cyw43_arch_deinit();
 
