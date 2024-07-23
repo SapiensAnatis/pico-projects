@@ -5,7 +5,7 @@ include(${PIMORONI_PICO_PATH}/common/pimoroni_bus.cmake)
 include(${PIMORONI_PICO_PATH}/libraries/pico_unicorn/pico_unicorn.cmake)
 
 add_executable(bin_unicorn 
-    http/tls_client.c 
+    http/tls_client.cpp 
     http/fetch_data.cpp 
     parsing/parsing.cpp 
     ../lib/cJSON/cJSON.c
