@@ -13,21 +13,21 @@ bool connect_wifi()
 {
     if (cyw43_arch_init_with_country(CYW43_COUNTRY_UK))
     {
-        printf("failed to initialise\n");
+        std::cout << "Failed to initialise WiFi connection.\n";
         return false;
     }
 
     cyw43_arch_enable_sta_mode();
 
-    printf("Connecting to WiFi...\n");
+    std::cout << "Connecting to WiFi...\n";
     if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 30000))
     {
-        printf("failed to connect.\n");
+        std::cout << "Failed to connect to WiFi.\n";
         return false;
     }
     else
     {
-        printf("Connected.\n");
+        std::cout << "Connected to WiFi.\n";
         return true;
     }
 }
@@ -48,7 +48,7 @@ int main()
     int fetch_result = fetch_collection_data(BIN_UNICORN_HOME_ADDRESS, response_buffer);
     if (fetch_result != 0)
     {
-        std::cout << "Failed to fetch collection data: error " << fetch_result << '\n';
+        std::cout << "Failed to fetch collection data: error %d\n", fetch_result;
         return -1;
     }
 
@@ -70,10 +70,11 @@ int main()
     }
 
     BinCollection next_collection;
-    int parse_result = parse_response(response_view.substr(body_start), next_collection);
-    if (parse_result != 0)
+    BinCollection next_collection_2;
+    ParseResult parse_result = parse_response(response_view.substr(body_start), next_collection, next_collection_2);
+    if (parse_result != ParseResult::Success)
     {
-        std::cout << "Failed to parse response: error " << parse_result << '\n';
+        std::cout << "Failed to parse response: error %d\n", parse_result;
         return -1;
     }
 

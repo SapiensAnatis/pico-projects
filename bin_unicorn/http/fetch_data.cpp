@@ -23,7 +23,7 @@ int8_t fetch_collection_data(const std::string &url_encoded_address, std::vector
         request.cert_len = sizeof(cert),
     };
 
-    std::cout << "Starting HTTPS GET: https://" << request.hostname << request.uri << std::endl;
+    std::cout << "Starting HTTPS GET: https://" << request.hostname << request.uri << "\n";
 
     auto start = std::chrono::high_resolution_clock::now();
 
@@ -34,14 +34,14 @@ int8_t fetch_collection_data(const std::string &url_encoded_address, std::vector
 
     if (result < 0)
     {
-        std::cout << "Request failed with error code " << result << std::endl;
+        std::cout << "Request failed with error code " << result << "\n";
         return result;
     }
 
     auto end = std::chrono::high_resolution_clock::now();
     auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
-    std::cout << "Request completed in " << milliseconds.count() << " ms" << std::endl;
+    std::cout << "Request completed in " << milliseconds.count() << " ms\n";
 
     return 0;
 }
