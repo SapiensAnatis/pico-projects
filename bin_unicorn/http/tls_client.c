@@ -38,6 +38,7 @@ typedef struct TLS_CLIENT_T_
 
 static struct altcp_tls_config *tls_config = NULL;
 
+#ifdef MBEDTLS_DEBUG_C
 static void my_debug(void *ctx, int level,
                      const char *file, int line,
                      const char *str)
@@ -46,6 +47,7 @@ static void my_debug(void *ctx, int level,
     fprintf((FILE *)ctx, "%s:%04d: %s", file, line, str);
     fflush((FILE *)ctx);
 }
+#endif
 
 
 static err_t tls_client_close(void *arg)
@@ -63,7 +65,7 @@ static err_t tls_client_close(void *arg)
         err = altcp_close(state->pcb);
         if (err != ERR_OK)
         {
-            printf("close failed %d, calling abort\n", err);
+            printf("Close failed; err=%d. Calling abort\n", err);
             altcp_abort(state->pcb);
             err = ERR_ABRT;
         }
@@ -77,15 +79,15 @@ static err_t tls_client_connected(void *arg, struct altcp_pcb *pcb, err_t err)
     TLS_CLIENT_T *state = (TLS_CLIENT_T *)arg;
     if (err != ERR_OK)
     {
-        printf("connect failed %d\n", err);
+        printf("Connect failed; err=%d\n", err);
         return tls_client_close(state);
     }
 
-    printf("connected to server, sending request\n");
+    printf("Connected to server, sending request\n");
     err = altcp_write(state->pcb, state->http_request, strlen(state->http_request), TCP_WRITE_FLAG_COPY);
     if (err != ERR_OK)
     {
-        printf("error writing data, err=%d", err);
+        printf("Error writing data; err=%d", err);
         return tls_client_close(state);
     }
 
@@ -95,7 +97,7 @@ static err_t tls_client_connected(void *arg, struct altcp_pcb *pcb, err_t err)
 static err_t tls_client_poll(void *arg, struct altcp_pcb *pcb)
 {
     TLS_CLIENT_T *state = (TLS_CLIENT_T *)arg;
-    printf("timed out\n");
+    printf("Request timed out\n");
     state->error = PICO_ERROR_TIMEOUT;
     return tls_client_close(arg);
 }
@@ -113,7 +115,7 @@ static err_t tls_client_recv(void *arg, struct altcp_pcb *pcb, struct pbuf *p, e
     TLS_CLIENT_T *state = (TLS_CLIENT_T *)arg;
     if (!p)
     {
-        printf("connection closed\n");
+        printf("Connection closed\n");
         return tls_client_close(state);
     }
 
@@ -133,8 +135,8 @@ static err_t tls_client_recv(void *arg, struct altcp_pcb *pcb, struct pbuf *p, e
             buffer[copy_len] = 0;
             state->response_cursor += copy_len;
 
-#ifdef DEBUG
-            printf("***\nnew data received from server:\n***\n\n%s\n", buffer);
+#ifdef MBEDTLS_DEBUG_C
+            printf("***\nNew data received from server:\n***\n\n%s\n", buffer);
 #endif
         }
 
@@ -150,7 +152,7 @@ static void tls_client_connect_to_server_ip(const ip_addr_t *ipaddr, TLS_CLIENT_
     err_t err;
     u16_t port = 443;
 
-    printf("connecting to server IP %s port %d\n", ipaddr_ntoa(ipaddr), port);
+    printf("Connecting to server IP %s port %d\n", ipaddr_ntoa(ipaddr), port);
     err = altcp_connect(state->pcb, ipaddr, port, tls_client_connected);
     if (err != ERR_OK)
     {
@@ -168,7 +170,7 @@ static void tls_client_dns_found(const char *hostname, const ip_addr_t *ipaddr, 
     }
     else
     {
-        printf("error resolving hostname %s\n", hostname);
+        printf("Error resolving hostname %s\n", hostname);
         tls_client_close(arg);
     }
 }
@@ -182,7 +184,7 @@ static bool tls_client_open(const char *hostname, void *arg)
     state->pcb = altcp_tls_new(tls_config, IPADDR_TYPE_ANY);
     if (!state->pcb)
     {
-        printf("failed to create pcb\n");
+        printf("Failed to create pcb\n");
         return false;
     }
 
@@ -194,7 +196,7 @@ static bool tls_client_open(const char *hostname, void *arg)
     /* Set SNI */
     mbedtls_ssl_set_hostname(altcp_tls_context(state->pcb), hostname);
 
-    printf("resolving %s\n", hostname);
+    printf("Resolving %s\n", hostname);
 
     // cyw43_arch_lwip_begin/end should be used around calls into lwIP to ensure correct locking.
     // You can omit them if you are in a callback from lwIP. Note that when using pico_cyw_arch_poll
@@ -210,7 +212,7 @@ static bool tls_client_open(const char *hostname, void *arg)
     }
     else if (err != ERR_INPROGRESS)
     {
-        printf("error initiating DNS resolving, err=%d\n", err);
+        printf("Error initiating DNS resolving, err=%d\n", err);
         tls_client_close(state->pcb);
     }
 
@@ -225,7 +227,7 @@ static TLS_CLIENT_T *tls_client_init(void)
     TLS_CLIENT_T *state = calloc(1, sizeof(TLS_CLIENT_T));
     if (!state)
     {
-        printf("failed to allocate state\n");
+        printf("Failed to allocate state\n");
         return NULL;
     }
 
@@ -242,9 +244,10 @@ int8_t https_get(TLS_CLIENT_REQUEST request, char *restrict buffer, uint16_t buf
         return -3;
     }
 
+#ifdef MBEDTLS_DEBUG_C
     mbedtls_debug_set_threshold(2);
     mbedtls_ssl_conf_dbg(NULL, my_debug, stdout);
-
+#endif
 
     state->timeout = TLS_CLIENT_TIMEOUT_SECS;
 
@@ -253,8 +256,6 @@ int8_t https_get(TLS_CLIENT_REQUEST request, char *restrict buffer, uint16_t buf
 
     state->response = buffer;
     state->response_buffer_len = buffer_len;
-
-
 
     if (!tls_client_open(request.hostname, state))
     {
