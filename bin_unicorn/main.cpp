@@ -5,6 +5,7 @@
 #include "http/fetch_data.hpp"
 #include "parsing/parsing.hpp"
 #include "display/display.hpp"
+#include "util.hpp"
 
 bool connect_wifi()
 {
@@ -34,7 +35,8 @@ int work_loop()
     std::vector<char> response_buffer;
     response_buffer.reserve(2048);
 
-    int fetch_result = fetch_collection_data(BIN_UNICORN_HOME_ADDRESS, response_buffer);
+    std::string address = url_encode(BIN_UNICORN_HOME_ADDRESS);
+    int fetch_result = fetch_collection_data(address, response_buffer);
     if (fetch_result != 0)
     {
         std::cout << "Failed to fetch collection data: error="

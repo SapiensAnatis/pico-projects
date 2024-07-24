@@ -7,7 +7,7 @@ Small program to fetch data from the Reading Borough Council API regarding the n
 Create a file called `address.cmake` in this folder, containing these contents: 
 
 ```cmake
-SET(BIN_UNICORN_HOME_ADDRESS "your%20url%20encoded%20address")
+SET(BIN_UNICORN_HOME_ADDRESS "your address")
 ```
 
 and build as normal.
