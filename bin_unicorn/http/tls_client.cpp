@@ -25,7 +25,7 @@ TlsClient::TlsClient(std::string hostname)
     this->state.timeout = TLS_CLIENT_TIMEOUT_SECS;
 }
 
-HttpsGetResult TlsClient::HttpsGet(TlsClientRequest request, char *buffer, uint16_t buffer_len)
+int8_t TlsClient::HttpsGet(TlsClientRequest request, char *buffer, uint16_t buffer_len)
 {
     auto tls_config = altcp_tls_create_config_client(request.cert, request.cert_len);
 
@@ -37,7 +37,7 @@ HttpsGetResult TlsClient::HttpsGet(TlsClientRequest request, char *buffer, uint1
 
     if (!OpenConnection(&this->state, tls_config))
     {
-        return HttpsGetResult::OpenConnectionFailure;
+        return -2;
     }
 
     while (!this->state.complete)
@@ -50,8 +50,7 @@ HttpsGetResult TlsClient::HttpsGet(TlsClientRequest request, char *buffer, uint1
 
     if (this->state.error != 0)
     {
-        std::cerr << "HTTPS request failed: err=" << this->state.error << "\n";
-        return HttpsGetResult::GenericLwipError;
+        return this->state.error;
     }
 
     int response_length = this->state.response_cursor;
@@ -60,10 +59,10 @@ HttpsGetResult TlsClient::HttpsGet(TlsClientRequest request, char *buffer, uint1
 
     if (response_length == 0)
     {
-        return HttpsGetResult::EmptyResponse;
+        return -4;
     }
 
-    return HttpsGetResult::Success;
+    return 0;
 }
 
 bool TlsClient::OpenConnection(TlsClientState *state, altcp_tls_config *tls_config)

@@ -20,9 +20,6 @@ extern "C"
 
 enum HttpsGetResult
 {
-    EmptyResponse = -3,
-    GenericLwipError = -2,
-    OpenConnectionFailure = -1,
     Success = 0,
 };
 
@@ -51,7 +48,7 @@ class TlsClient
 {
 public:
     TlsClient(std::string hostname);
-    HttpsGetResult HttpsGet(TlsClientRequest request, char *buffer, uint16_t buffer_len);
+    int8_t HttpsGet(TlsClientRequest request, char *buffer, uint16_t buffer_len);
 
 private:
     TlsClientState state;
