@@ -29,7 +29,7 @@ static Color get_collection_colour(CollectionType type)
     case CollectionType::GardenWaste:
         return Color{0, 255, 0};
     default:
-        return Color{128, 128, 128};
+        return Color{};
     };
 }
 

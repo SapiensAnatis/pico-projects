@@ -66,6 +66,7 @@
 #define MBEDTLS_BASE64_C
 
 // Debug
-#define MBEDTLS_DEBUG_C
+//#define MBEDTLS_DEBUG_C
 
+// Needed for RBC website handshake
 #define MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED

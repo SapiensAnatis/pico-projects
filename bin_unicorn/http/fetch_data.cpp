@@ -34,7 +34,7 @@ int8_t fetch_collection_data(const std::string &url_encoded_address, std::vector
 
     if (result < 0)
     {
-        std::cout << "Request failed with error code " << result << "\n";
+        std::cout << "Request failed; err=" << std::to_string(result) << "\n";
         return result;
     }
 
