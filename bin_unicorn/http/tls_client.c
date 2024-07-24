@@ -242,7 +242,7 @@ int8_t https_get(TLS_CLIENT_REQUEST request, char *restrict buffer, uint16_t buf
         return -3;
     }
 
-    mbedtls_debug_set_threshold(3);
+    mbedtls_debug_set_threshold(2);
     mbedtls_ssl_conf_dbg(NULL, my_debug, stdout);
 
 

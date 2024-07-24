@@ -29,13 +29,16 @@ bool connect_wifi()
     }
 }
 
-int work_loop(std::vector<char> response_buffer)
+int work_loop()
 {
+    std::vector<char> response_buffer;
+    response_buffer.reserve(2048);
+
     int fetch_result = fetch_collection_data(BIN_UNICORN_HOME_ADDRESS, response_buffer);
     if (fetch_result != 0)
     {
-        std::cout << "Failed to fetch collection data: error %d\n"
-                  << fetch_result;
+        std::cout << "Failed to fetch collection data: error="
+                  << std::to_string(fetch_result) << "\n";
         return -1;
     }
 
@@ -61,8 +64,8 @@ int work_loop(std::vector<char> response_buffer)
     ParseResult parse_result = parse_response(response_view.substr(body_start), next_collection, next_collection_2);
     if (parse_result != ParseResult::Success)
     {
-        std::cout << "Failed to parse response: error %d\n"
-                  << parse_result;
+        std::cout << "Failed to parse response: error="
+                  << std::to_string(parse_result) << "\n";
         return -1;
     }
 
@@ -83,10 +86,7 @@ int main()
         sleep_ms(3000);
     }
 
-    std::vector<char> response_buffer;
-    response_buffer.reserve(2048);
-
-    int result = work_loop(response_buffer);
+    int result = work_loop();
     if (result)
     {
         return result;

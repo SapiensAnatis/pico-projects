@@ -33,14 +33,26 @@ static Color get_collection_colour(CollectionType type)
     };
 }
 
-void display_next_collections(BinCollection collection_1, BinCollection collection_2)
+void draw_collection(BinCollection collection, bool half)
 {
-    for (int x = 0; x < UNICORN_MAX_X / 2; x++)
+    uint8_t x_start = half ? UNICORN_MAX_X / 2 : 0;
+
+    for (uint8_t x = x_start; x <= UNICORN_MAX_X; x++)
     {
-        for (int y = 0; y < UNICORN_MAX_Y; y++)
+        for (uint8_t y = 0; y <= UNICORN_MAX_Y; y++)
         {
-            Color collection_colour = get_collection_colour(collection_1.collection_type);
+            Color collection_colour = get_collection_colour(collection.collection_type);
             pico_unicorn.set_pixel(x, y, collection_colour.r, collection_colour.g, collection_colour.b);
         }
+    }
+}
+
+void display_next_collections(BinCollection collection_1, BinCollection collection_2)
+{
+    draw_collection(collection_1, false);
+
+    if (collection_2.date == collection_1.date)
+    {
+        draw_collection(collection_2, true);
     }
 }
