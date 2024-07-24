@@ -3,7 +3,10 @@
 #include <vector>
 #include <chrono>
 
-#include "tls_client.hpp"
+extern "C"
+{
+#include "tls_client.h"
+}
 #include "config.hpp"
 #include "fetch_data.hpp"
 
@@ -12,19 +15,19 @@ int8_t fetch_collection_data(const std::string &url_encoded_address, std::vector
     const auto uri = "/rbc/mycollections/" + url_encoded_address;
     constexpr uint8_t cert[] = READING_GOV_UK_ROOT_CERT;
 
-    TlsClientRequest request = {};
-    request.headers = READING_GOV_UK_HEADERS;
-    request.uri = uri;
-    request.cert = cert;
-    request.cert_len = sizeof(cert);
+    TLS_CLIENT_REQUEST request = {
+        request.hostname = READING_GOV_UK_HOST,
+        request.headers = READING_GOV_UK_HEADERS,
+        request.uri = uri.c_str(),
+        request.cert = cert,
+        request.cert_len = sizeof(cert),
+    };
 
-    TlsClient client = TlsClient(READING_GOV_UK_HOST);
-
-    std::cout << "Starting HTTPS GET: https://" << READING_GOV_UK_HOST << request.uri << "\n";
+    std::cout << "Starting HTTPS GET: https://" << request.hostname << request.uri << "\n";
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    int8_t result = client.HttpsGet(
+    int8_t result = https_get(
         request,
         buffer.data(),
         buffer.capacity());

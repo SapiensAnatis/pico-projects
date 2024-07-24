@@ -1,10 +1,6 @@
 #ifndef PARSING_PARSING_H_
 #define PARSING_PARSING_H_
 
-extern "C"
-{
-#include "cJSON.h"
-}
 #include "date/date.h"
 
 /// @brief A type of bin collection.

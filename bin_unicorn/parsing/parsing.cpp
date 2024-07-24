@@ -2,7 +2,10 @@
 #include <iostream>
 #include <map>
 #include <string>
-
+extern "C"
+{
+#include "cJSON.h"
+}
 #include "date/date.h"
 
 #include "parsing.hpp"
@@ -73,8 +76,6 @@ static ParseResult parse_collection(const cJSON *collection, BinCollection &out_
         out_bin_collection.date = parsed_date,
         out_bin_collection.collection_type = parsed_collection_type,
     };
-
-    return ParseResult::Success;
 }
 
 ParseResult parse_response(
