@@ -9,7 +9,7 @@ extern "C"
 #include "date/date.h"
 
 /// @brief A type of bin collection.
-enum CollectionType : uint8_t
+enum class CollectionType : uint8_t
 {
     DomesticWaste,
     FoodWaste,

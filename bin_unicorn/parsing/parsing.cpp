@@ -8,10 +8,10 @@
 #include "parsing.hpp"
 
 static const std::map<const std::basic_string_view<char>, CollectionType>
-    collection_map = {{"Domestic Waste", DomesticWaste},
-                      {"Food Waste", FoodWaste},
-                      {"Recycling", Recycling},
-                      {"Garden Waste", GardenWaste}};
+    collection_map = {{"Domestic Waste", CollectionType::DomesticWaste},
+                      {"Food Waste", CollectionType::FoodWaste},
+                      {"Recycling", CollectionType::Recycling},
+                      {"Garden Waste", CollectionType::GardenWaste}};
 
 static bool parse_collection_string(const std::basic_string_view<char> &service_string, CollectionType &out_collection_type)
 {

@@ -7,8 +7,9 @@ include(${PIMORONI_PICO_PATH}/libraries/pico_unicorn/pico_unicorn.cmake)
 add_executable(bin_unicorn 
     http/tls_client.c 
     http/fetch_data.cpp 
-    parsing/parsing.cpp 
+    parsing/parsing.cpp
     ../lib/cJSON/cJSON.c
+    display/display.cpp 
     main.cpp)
 
 include(address.cmake)

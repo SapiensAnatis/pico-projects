@@ -8,7 +8,7 @@
                                   "Connection: close\r\n" \
                                   "%s\r\n"                \
                                   "\r\n"
-#define TLS_CLIENT_TIMEOUT_SECS 60
+#define TLS_CLIENT_TIMEOUT_SECS 120
 
 #include <string.h>
 #include <time.h>
@@ -22,6 +22,7 @@
 #include "lwip/dns.h"
 #include "lwip/tcpbase.h"
 #include "tls_client.h"
+#include "mbedtls/debug.h"
 
 typedef struct TLS_CLIENT_T_
 {
@@ -36,6 +37,16 @@ typedef struct TLS_CLIENT_T_
 } TLS_CLIENT_T;
 
 static struct altcp_tls_config *tls_config = NULL;
+
+static void my_debug(void *ctx, int level,
+                     const char *file, int line,
+                     const char *str)
+{
+    ((void)level);
+    fprintf((FILE *)ctx, "%s:%04d: %s", file, line, str);
+    fflush((FILE *)ctx);
+}
+
 
 static err_t tls_client_close(void *arg)
 {
@@ -231,6 +242,10 @@ int8_t https_get(TLS_CLIENT_REQUEST request, char *restrict buffer, uint16_t buf
         return -3;
     }
 
+    mbedtls_debug_set_threshold(3);
+    mbedtls_ssl_conf_dbg(NULL, my_debug, stdout);
+
+
     state->timeout = TLS_CLIENT_TIMEOUT_SECS;
 
     state->http_request = buffer;
@@ -238,6 +253,8 @@ int8_t https_get(TLS_CLIENT_REQUEST request, char *restrict buffer, uint16_t buf
 
     state->response = buffer;
     state->response_buffer_len = buffer_len;
+
+
 
     if (!tls_client_open(request.hostname, state))
     {

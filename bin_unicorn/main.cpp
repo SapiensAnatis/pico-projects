@@ -4,10 +4,7 @@
 #include "pico/cyw43_arch.h"
 #include "http/fetch_data.hpp"
 #include "parsing/parsing.hpp"
-
-using namespace pimoroni;
-
-PicoUnicorn pico_unicorn;
+#include "display/display.hpp"
 
 bool connect_wifi()
 {
@@ -32,28 +29,18 @@ bool connect_wifi()
     }
 }
 
-int main()
+int work_loop(std::vector<char> response_buffer)
 {
-    stdio_init_all();
-
-    while (!connect_wifi())
-    {
-        cyw43_arch_deinit();
-        sleep_ms(3000);
-    }
-
-    std::vector<char> response_buffer;
-    response_buffer.reserve(2048);
-
     int fetch_result = fetch_collection_data(BIN_UNICORN_HOME_ADDRESS, response_buffer);
     if (fetch_result != 0)
     {
-        std::cout << "Failed to fetch collection data: error %d\n", fetch_result;
+        std::cout << "Failed to fetch collection data: error %d\n"
+                  << fetch_result;
         return -1;
     }
 
     // This is not really standards-compliant but it seems to work for now.
-    // TODO: Be a bit more intelligent and read the Content-Length header instead
+    // Could be a bit more intelligent and read the Content-Length header instead
     if (response_buffer.back() != 0)
     {
         std::cout << "Response buffer was not null-terminated - this is not supported.\n";
@@ -74,11 +61,36 @@ int main()
     ParseResult parse_result = parse_response(response_view.substr(body_start), next_collection, next_collection_2);
     if (parse_result != ParseResult::Success)
     {
-        std::cout << "Failed to parse response: error %d\n", parse_result;
+        std::cout << "Failed to parse response: error %d\n"
+                  << parse_result;
         return -1;
     }
 
     std::cout << "Next bin collection is " << (int32_t)next_collection.collection_type << " on " << next_collection.date << '\n';
+
+    display_next_collections(next_collection, next_collection_2);
+
+    return 0;
+}
+
+int main()
+{
+    stdio_init_all();
+
+    while (!connect_wifi())
+    {
+        cyw43_arch_deinit();
+        sleep_ms(3000);
+    }
+
+    std::vector<char> response_buffer;
+    response_buffer.reserve(2048);
+
+    int result = work_loop(response_buffer);
+    if (result)
+    {
+        return result;
+    }
 
     cyw43_arch_deinit();
 
