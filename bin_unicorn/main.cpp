@@ -7,6 +7,18 @@
 #include "display/display.hpp"
 #include "util.hpp"
 
+constexpr uint32_t one_day_ms = 24 * 60 * 60 * 1000;
+constexpr uint32_t success_sleep = one_day_ms;
+
+constexpr uint32_t three_hours_ms = 3 * 60 * 60 * 1000;
+constexpr uint32_t error_sleep = three_hours_ms;
+
+constexpr uint32_t wifi_connect_fail_sleep = 5 * 1000;
+
+constexpr size_t response_buffer_size = 2048;
+
+/// @brief Connect to the WiFi network using the WIFI_SSID and WIFI_PASSWORD definitions.
+/// @return True if successful, otherwise false.
 bool connect_wifi()
 {
     if (cyw43_arch_init_with_country(CYW43_COUNTRY_UK))
@@ -30,18 +42,18 @@ bool connect_wifi()
     }
 }
 
-int work_loop()
+/// @brief Main worker loop.
+/// @param address The address to fetch collection data for.
+/// @param response_buffer
+/// @return True if the loop succeeded, otherwise false.
+bool work_loop(const std::string address, std::vector<char> &response_buffer)
 {
-    std::vector<char> response_buffer;
-    response_buffer.reserve(2048);
-
-    std::string address = url_encode(BIN_UNICORN_HOME_ADDRESS);
     int fetch_result = fetch_collection_data(address, response_buffer);
     if (fetch_result != 0)
     {
         std::cout << "Failed to fetch collection data: error="
                   << std::to_string(fetch_result) << "\n";
-        return -1;
+        return false;
     }
 
     // This is not really standards-compliant but it seems to work for now.
@@ -49,7 +61,7 @@ int work_loop()
     if (response_buffer.back() != 0)
     {
         std::cout << "Response buffer was not null-terminated - this is not supported.\n";
-        return -1;
+        return false;
     }
 
     std::string_view response_view(response_buffer.data());
@@ -58,7 +70,7 @@ int work_loop()
     if (body_start == std::string::npos)
     {
         std::cout << "Failed to find start of response body\n";
-        return -1;
+        return false;
     }
 
     BinCollection next_collection;
@@ -68,30 +80,60 @@ int work_loop()
     {
         std::cout << "Failed to parse response: error="
                   << std::to_string(parse_result) << "\n";
-        return -1;
+        return false;
     }
 
     std::cout << "Next bin collection is " << (int32_t)next_collection.collection_type << " on " << next_collection.date << '\n';
 
     display_next_collections(next_collection, next_collection_2);
 
-    return 0;
+    return true;
 }
 
 int main()
 {
     stdio_init_all();
 
-    while (!connect_wifi())
+    bool connected_to_wifi = false;
+    do
     {
-        cyw43_arch_deinit();
-        sleep_ms(3000);
-    }
+        display_connecting_wifi();
+        connected_to_wifi = connect_wifi();
 
-    int result = work_loop();
-    if (result)
+        if (!connected_to_wifi)
+        {
+            cyw43_arch_deinit();
+            display_failure();
+            sleep_ms(wifi_connect_fail_sleep);
+        }
+    } while (!connected_to_wifi);
+
+    std::string address = url_encode(BIN_UNICORN_HOME_ADDRESS);
+
+    std::vector<char> response_buffer;
+    response_buffer.reserve(response_buffer_size);
+
+    while (true)
     {
-        return result;
+        display_loading();
+
+        bool success = work_loop(address, response_buffer);
+        if (success)
+        {
+            // TODO: If the device is started late in the day prior to the collection data changing, sleeping for 1 day
+            // could lead to stale data being displayed until late in the next day. Consider using NTP instead to re-run
+            // the work loop at midnight.
+
+            std::cout << "Work loop succeeded. Sleeping for " << std::to_string(success_sleep) << " ms\n";
+            sleep_ms(success_sleep);
+        }
+        else
+        {
+            display_failure();
+
+            std::cout << "Work loop failed! Sleeping for " << std::to_string(error_sleep) << " ms\n";
+            sleep_ms(error_sleep);
+        }
     }
 
     cyw43_arch_deinit();

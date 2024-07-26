@@ -9,7 +9,7 @@ static constexpr char hex_digits[] = "0123456789ABCDEF";
 /// @brief Convert a character to its hex equivalent, e.g. " " -> "20"
 /// @param num The character to convert.
 /// @return The hex string.
-static constexpr std::string to_hex_string(char num)
+static std::string to_hex_string(char num)
 {
     std::string result;
 
@@ -26,7 +26,7 @@ static constexpr std::string to_hex_string(char num)
 /// @brief URL-encode a string, escaping any non-URL-safe characters.
 /// @param input The input string.
 /// @return The input string, URL-encoded.
-constexpr std::string url_encode(std::string input)
+std::string url_encode(std::string input)
 {
     std::string result;
 

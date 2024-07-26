@@ -10,7 +10,7 @@ extern "C"
 #include "config.hpp"
 #include "fetch_data.hpp"
 
-int8_t fetch_collection_data(const std::string &url_encoded_address, std::vector<char> &buffer)
+int8_t fetch_collection_data(std::string url_encoded_address, std::vector<char> &buffer)
 {
     const auto uri = "/rbc/mycollections/" + url_encoded_address;
     constexpr uint8_t cert[] = READING_GOV_UK_ROOT_CERT;

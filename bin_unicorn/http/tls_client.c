@@ -236,6 +236,8 @@ static TLS_CLIENT_T *tls_client_init(void)
 
 int8_t https_get(TLS_CLIENT_REQUEST request, char *restrict buffer, uint16_t buffer_len)
 {
+    assert(buffer != NULL);
+
     tls_config = altcp_tls_create_config_client(request.cert, request.cert_len);
 
     TLS_CLIENT_T *state = tls_client_init();
