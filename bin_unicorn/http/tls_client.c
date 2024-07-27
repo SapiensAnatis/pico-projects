@@ -1,5 +1,5 @@
 /*
- * Adapted from pico_w/wifi/tls_client/tls_verify.c of https://github.com/raspberrypi/pico-examples/blob/eca13acf57916a0bd5961028314006983894fc84/pico_w/wifi/tls_client/tls_verify.c
+ * Adapted from pico_w/wifi/tls_client/tls_common.c of https://github.com/raspberrypi/pico-examples/blob/eca13acf57916a0bd5961028314006983894fc84/pico_w/wifi/tls_client/tls_common.c
  * Additional credit to Micheal Bell for https_get: https://github.com/MichaelBell/Picodon/blob/08d30cfb9d10d6afd966fdd4f9210867cf3bb461/tls_client.c#L268
  */
 
@@ -243,6 +243,7 @@ int8_t https_get(TLS_CLIENT_REQUEST request, char *restrict buffer, uint16_t buf
     TLS_CLIENT_T *state = tls_client_init();
     if (!state)
     {
+        altcp_tls_free_config(tls_config);
         return -3;
     }
 
@@ -261,6 +262,8 @@ int8_t https_get(TLS_CLIENT_REQUEST request, char *restrict buffer, uint16_t buf
 
     if (!tls_client_open(request.hostname, state))
     {
+        free(state);    
+        altcp_tls_free_config(tls_config);
         return -2;
     }
 
@@ -274,10 +277,16 @@ int8_t https_get(TLS_CLIENT_REQUEST request, char *restrict buffer, uint16_t buf
 
     if (state->error != 0)
     {
+        free(state);
+        altcp_tls_free_config(tls_config);
         return state->error;
     }
 
     int response_length = state->response_cursor;
+    
+    // We do not support chunked encoding, but the RBC API does not appear to use it.
+    // We should check this continues to be the case, however.
+    assert(strstr(state->response, "Transfer-Encoding: chunked") == NULL);
 
     free(state);
     altcp_tls_free_config(tls_config);
