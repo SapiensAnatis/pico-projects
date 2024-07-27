@@ -122,7 +122,7 @@ int main()
         {
             // TODO: If the device is started late in the day prior to the collection data changing, sleeping for 1 day
             // could lead to stale data being displayed until late in the next day. Consider using NTP instead to re-run
-            // the work loop at midnight.
+            // the work loop at midnight (UTC as this is when the API updates).
 
             std::cout << "Work loop succeeded. Sleeping for " << std::to_string(success_sleep) << " ms\n";
             sleep_ms(success_sleep);
