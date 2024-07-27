@@ -7,11 +7,10 @@
 #include "display/display.hpp"
 #include "util.hpp"
 
-constexpr uint32_t one_day_ms = 24 * 60 * 60 * 1000;
-constexpr uint32_t success_sleep = one_day_ms;
-
 constexpr uint32_t three_hours_ms = 3 * 60 * 60 * 1000;
+
 constexpr uint32_t error_sleep = three_hours_ms;
+constexpr uint32_t success_sleep = three_hours_ms * 2;
 
 constexpr uint32_t wifi_connect_fail_sleep = 5 * 1000;
 
