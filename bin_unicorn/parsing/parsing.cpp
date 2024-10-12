@@ -33,6 +33,7 @@ static bool parse_collection_string(const std::basic_string_view<char> &service_
 
 static bool parse_date(const std::string &date_time_string, date::year_month_day &out_date)
 {
+    // todo remove this
     std::istringstream date_stream(date_time_string);
     date_stream >> date::parse("%d/%m/%Y", out_date);
 

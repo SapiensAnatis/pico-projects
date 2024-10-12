@@ -107,6 +107,8 @@ int main()
         }
     } while (!connected_to_wifi);
 
+    cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
+
     std::string address = url_encode(BIN_UNICORN_HOME_ADDRESS);
 
     std::vector<char> response_buffer;
@@ -119,9 +121,9 @@ int main()
         bool success = work_loop(address, response_buffer);
         if (success)
         {
-            // TODO: If the device is started late in the day prior to the collection data changing, sleeping for 1 day
-            // could lead to stale data being displayed until late in the next day. Consider using NTP instead to re-run
-            // the work loop at midnight (UTC as this is when the API updates).
+            // TODO: If the device is started in the day prior to the collection data changing, sleeping here could
+            // lead to stale data being displayed.
+            // Consider using NTP instead to re-run the work loop at a specific time when an update is expected.
 
             std::cout << "Work loop succeeded. Sleeping for " << std::to_string(success_sleep) << " ms\n";
             sleep_ms(success_sleep);
