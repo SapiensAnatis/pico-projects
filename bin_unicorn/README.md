@@ -10,4 +10,10 @@ Create a file called `address.cmake` in this folder, containing these contents:
 SET(BIN_UNICORN_HOME_ADDRESS "your address")
 ```
 
-and build as normal.
+The address should not be URL-encoded (the program does this) and have a comma before the postcode
+
+Example:
+
+```
+40 Caversham Road Reading, RG17EB
+```
