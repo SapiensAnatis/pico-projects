@@ -3,18 +3,17 @@
 #ifndef LEDRendererHpp
 #define LEDRendererHpp
 
-#include <string>
-#include <cstdint>
-#include "pico/stdlib.h"
 #include "MorseRenderer.hpp"
+#include "pico/stdlib.h"
+#include <cstdint>
+#include <string>
 
 /// @brief LED rendered for standard Pico
-class LEDRenderer : public MorseRenderer
-{
-public:
+class LEDRenderer : public MorseRenderer {
+  public:
     LEDRenderer();
 
-private:
+  private:
     void Dit();
     void Dah();
 

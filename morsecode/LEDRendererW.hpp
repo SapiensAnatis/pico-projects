@@ -3,16 +3,15 @@
 #ifndef LEDRendererWHpp
 #define LEDRendererWHpp
 
-#include "pico/stdlib.h"
 #include "MorseRenderer.hpp"
+#include "pico/stdlib.h"
 
 /// @brief LED renderer for Pico W
-class LEDRendererW : public MorseRenderer
-{
-public:
+class LEDRendererW : public MorseRenderer {
+  public:
     LEDRendererW();
 
-private:
+  private:
     void Dit();
     void Dah();
 };

@@ -9,8 +9,9 @@ void display_connecting_wifi();
 /// @brief Display a loading image to indicate the HTTP request / parsing is in progress.
 void display_loading();
 
-/// @brief Display the next two bin collections on the Unicorn display - using a different colour for each type.
-/// If both collections are on the same day, the screen will light up with both colours.
+/// @brief Display the next two bin collections on the Unicorn display - using a different colour
+/// for each type. If both collections are on the same day, the screen will light up with both
+/// colours.
 void display_next_collections(BinCollection collection_1, BinCollection collection_2);
 
 /// @brief Draw a red X on the Unicorn display to indicate an error has occurred.

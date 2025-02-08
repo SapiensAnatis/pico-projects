@@ -1,11 +1,10 @@
 #ifndef MorseRendererHpp
 #define MorseRendererHpp
 
-#include <string>
 #include <cstdint>
+#include <string>
 
-struct MorseCharacter
-{
+struct MorseCharacter {
     uint8_t MorseLen : 3;
     uint8_t MorseData : 5; // 0 = dot, 1 = dash
 };
@@ -14,12 +13,10 @@ constexpr char DotCharacter = '.';
 constexpr char DashCharacter = '-';
 constexpr char SpaceCharacter = ' ';
 
-static constexpr MorseCharacter EncodeMorse(const char *morse)
-{
+static constexpr MorseCharacter EncodeMorse(const char *morse) {
     MorseCharacter result = {};
 
-    for (int i = 0; morse[i] != 0; i++)
-    {
+    for (int i = 0; morse[i] != 0; i++) {
         result.MorseLen++;
         result.MorseData |= (morse[i] == DashCharacter) << i;
     }
@@ -27,13 +24,11 @@ static constexpr MorseCharacter EncodeMorse(const char *morse)
     return result;
 }
 
-static const std::string DecodeMorse(const MorseCharacter morse)
-{
+static const std::string DecodeMorse(const MorseCharacter morse) {
     std::string result;
     result.reserve(morse.MorseLen);
 
-    for (int i = 0; i < morse.MorseLen; i++)
-    {
+    for (int i = 0; i < morse.MorseLen; i++) {
         bool isDash = (1 << i) & morse.MorseData;
         result += isDash ? '-' : '.';
     }
@@ -41,12 +36,11 @@ static const std::string DecodeMorse(const MorseCharacter morse)
     return result;
 }
 
-class MorseRenderer
-{
-public:
+class MorseRenderer {
+  public:
     void Render(const std::string &inputString);
 
-protected:
+  protected:
     static constexpr uint16_t DitDuration = 250; // Milliseconds
     static constexpr uint16_t DahDuration = DitDuration * 3;
 
@@ -57,7 +51,7 @@ protected:
     virtual void Dit() = 0;
     virtual void Dah() = 0;
 
-private:
+  private:
     void Space();
     const std::string GetMorse(char inputChar);
 

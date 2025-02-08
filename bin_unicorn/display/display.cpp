@@ -1,30 +1,26 @@
 #define UNICORN_MAX_X 16
 #define UNICORN_MAX_Y 7
 
+#include "display.hpp"
 #include "pico/stdlib.h"
 #include "pico_unicorn.hpp"
-#include "display.hpp"
 
 using namespace pimoroni;
 
 PicoUnicorn pico_unicorn;
 
-struct Colour
-{
+struct Colour {
     uint8_t r;
     uint8_t g;
     uint8_t b;
 };
 
-struct DisplayCoordinate
-{
+struct DisplayCoordinate {
     uint8_t x;
     uint8_t y;
 };
 
-template <size_t N>
-struct MonoColourImage
-{
+template <size_t N> struct MonoColourImage {
     Colour colour;
     DisplayCoordinate pixels[N];
 };
@@ -65,11 +61,8 @@ constexpr MonoColourImage loading_image = {
 };
 // clang-format on
 
-static Colour
-get_collection_colour(CollectionType type)
-{
-    switch (type)
-    {
+static Colour get_collection_colour(CollectionType type) {
+    switch (type) {
     case CollectionType::DomesticWaste:
         return Colour{255, 255, 255};
     case CollectionType::FoodWaste:
@@ -83,52 +76,36 @@ get_collection_colour(CollectionType type)
     };
 }
 
-template <size_t N>
-static void display_mono_colour_image(const MonoColourImage<N> image)
-{
+template <size_t N> static void display_mono_colour_image(const MonoColourImage<N> image) {
     pico_unicorn.clear();
 
-    for (auto &point : image.pixels)
-    {
+    for (auto &point : image.pixels) {
         pico_unicorn.set_pixel(point.x, point.y, image.colour.r, image.colour.g, image.colour.b);
     }
 }
 
-static void display_collection(BinCollection collection, bool half)
-{
+static void display_collection(BinCollection collection, bool half) {
     uint8_t x_start = half ? UNICORN_MAX_X / 2 : 0;
 
-    for (uint8_t x = x_start; x <= UNICORN_MAX_X; x++)
-    {
-        for (uint8_t y = 0; y <= UNICORN_MAX_Y; y++)
-        {
+    for (uint8_t x = x_start; x <= UNICORN_MAX_X; x++) {
+        for (uint8_t y = 0; y <= UNICORN_MAX_Y; y++) {
             Colour collection_colour = get_collection_colour(collection.collection_type);
-            pico_unicorn.set_pixel(x, y, collection_colour.r, collection_colour.g, collection_colour.b);
+            pico_unicorn.set_pixel(x, y, collection_colour.r, collection_colour.g,
+                                   collection_colour.b);
         }
     }
 }
 
-void display_connecting_wifi()
-{
-    display_mono_colour_image(connecting_wifi_image);
-}
+void display_connecting_wifi() { display_mono_colour_image(connecting_wifi_image); }
 
-void display_loading()
-{
-    display_mono_colour_image(loading_image);
-}
+void display_loading() { display_mono_colour_image(loading_image); }
 
-void display_next_collections(BinCollection collection_1, BinCollection collection_2)
-{
+void display_next_collections(BinCollection collection_1, BinCollection collection_2) {
     display_collection(collection_1, false);
 
-    if (collection_2.date == collection_1.date)
-    {
+    if (collection_2.date == collection_1.date) {
         display_collection(collection_2, true);
     }
 }
 
-void display_failure()
-{
-    display_mono_colour_image(error_image);
-}
+void display_failure() { display_mono_colour_image(error_image); }

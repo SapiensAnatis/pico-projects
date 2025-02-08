@@ -3,7 +3,8 @@
 
 // ISRG Root X1
 // Expiry: Mon, 04 Jun 2035 11:04:38 GMT
-#define READING_GOV_UK_ROOT_CERT "-----BEGIN CERTIFICATE-----\n\
+#define READING_GOV_UK_ROOT_CERT                                                                   \
+    "-----BEGIN CERTIFICATE-----\n\
 MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw\n\
 TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh\n\
 cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMTUwNjA0MTEwNDM4\n\
@@ -37,7 +38,8 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=\n\
 
 #define READING_GOV_UK_HOST "api.reading.gov.uk"
 
-#define READING_GOV_UK_HEADERS "Accept: application/json\r\n\
+#define READING_GOV_UK_HEADERS                                                                     \
+    "Accept: application/json\r\n\
                                 User-Agent: bin_unicorn/0.1.0 RP2040\r\n\
                                 GitHub-Username: sapiensanatis\r\n"
 

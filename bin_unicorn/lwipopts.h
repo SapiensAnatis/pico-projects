@@ -4,7 +4,8 @@
 #include "lwipopts_common.h"
 
 /* TCP WND must be at least 16 kb to match TLS record size
-   or you will get a warning "altcp_tls: TCP_WND is smaller than the RX decrypion buffer, connection RX might stall!" */
+   or you will get a warning "altcp_tls: TCP_WND is smaller than the RX decrypion buffer, connection
+   RX might stall!" */
 #undef TCP_WND
 #define TCP_WND 18432
 

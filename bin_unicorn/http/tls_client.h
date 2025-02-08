@@ -2,8 +2,7 @@
 #define HTTP_TLS_CLIENT_H_
 
 /// @brief Request object for tls_client.
-typedef struct TLS_CLIENT_REQUEST_T_
-{
+typedef struct TLS_CLIENT_REQUEST_T_ {
     const char *hostname;
     const char *uri;
     const char *headers;

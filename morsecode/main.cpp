@@ -1,12 +1,10 @@
-#include <memory>
-#include "pico/stdlib.h"
 #include "LEDRendererW.hpp"
+#include "pico/stdlib.h"
+#include <memory>
 
-int main()
-{
+int main() {
     std::unique_ptr<MorseRenderer> renderer(new LEDRendererW());
-    while (true)
-    {
+    while (true) {
         renderer->Render("SOS");
     }
 }

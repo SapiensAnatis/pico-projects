@@ -7,23 +7,21 @@
 
 #include "parsing.hpp"
 
-static const std::map<const std::basic_string_view<char>, CollectionType>
-    collection_map = {{"Domestic Waste", CollectionType::DomesticWaste},
-                      {"Food Waste", CollectionType::FoodWaste},
-                      {"Recycling", CollectionType::Recycling},
-                      {"Garden Waste", CollectionType::GardenWaste}};
+static const std::map<const std::basic_string_view<char>, CollectionType> collection_map = {
+    {"Domestic Waste", CollectionType::DomesticWaste},
+    {"Food Waste", CollectionType::FoodWaste},
+    {"Recycling", CollectionType::Recycling},
+    {"Garden Waste", CollectionType::GardenWaste}};
 
-static bool parse_collection_string(const std::basic_string_view<char> &service_string, CollectionType &out_collection_type)
-{
+static bool parse_collection_string(const std::basic_string_view<char> &service_string,
+                                    CollectionType &out_collection_type) {
     int first_word_end = service_string.find(" Collection Service");
-    if (first_word_end == -1)
-    {
+    if (first_word_end == -1) {
         return false;
     }
 
     auto collection = collection_map.find(service_string.substr(0, first_word_end));
-    if (collection == collection_map.end())
-    {
+    if (collection == collection_map.end()) {
         return false;
     }
 
@@ -31,8 +29,7 @@ static bool parse_collection_string(const std::basic_string_view<char> &service_
     return true;
 }
 
-static bool parse_date(const std::string &date_time_string, date::year_month_day &out_date)
-{
+static bool parse_date(const std::string &date_time_string, date::year_month_day &out_date) {
     // todo remove this
     std::istringstream date_stream(date_time_string);
     date_stream >> date::parse("%d/%m/%Y", out_date);
@@ -40,33 +37,30 @@ static bool parse_date(const std::string &date_time_string, date::year_month_day
     return !date_stream.fail();
 }
 
-static ParseResult parse_collection(const cJSON *collection, BinCollection &out_bin_collection)
-{
+static ParseResult parse_collection(const cJSON *collection, BinCollection &out_bin_collection) {
     cJSON *date = cJSON_GetObjectItem(collection, "Date");
-    if (!cJSON_IsString(date))
-    {
+    if (!cJSON_IsString(date)) {
         std::cerr << "Error parsing JSON: $.Collections[0].Date was not a string";
         return ParseResult::InvalidJsonSchema;
     }
 
     cJSON *service = cJSON_GetObjectItem(collection, "Service");
-    if (!cJSON_IsString(service))
-    {
+    if (!cJSON_IsString(service)) {
         std::cerr << "Error parsing JSON: $.Collections[0].Service was not a string";
         return ParseResult::InvalidJsonSchema;
     }
 
     date::year_month_day parsed_date;
-    if (!parse_date(std::string(date->valuestring), parsed_date))
-    {
-        std::cerr << "Error parsing JSON: $.Collections[0].Date '" << date->valuestring << "' was not a valid date";
+    if (!parse_date(std::string(date->valuestring), parsed_date)) {
+        std::cerr << "Error parsing JSON: $.Collections[0].Date '" << date->valuestring
+                  << "' was not a valid date";
         return ParseResult::InvalidJsonSchema;
     }
 
     CollectionType parsed_collection_type;
-    if (!parse_collection_string(std::string(service->valuestring), parsed_collection_type))
-    {
-        std::cerr << "Error parsing JSON: $.Collections[0].Service '" << service->valuestring << "' did not match expected format";
+    if (!parse_collection_string(std::string(service->valuestring), parsed_collection_type)) {
+        std::cerr << "Error parsing JSON: $.Collections[0].Service '" << service->valuestring
+                  << "' did not match expected format";
         return ParseResult::InvalidJsonSchema;
     }
 
@@ -78,54 +72,44 @@ static ParseResult parse_collection(const cJSON *collection, BinCollection &out_
     return ParseResult::Success;
 }
 
-ParseResult parse_response(
-    const std::basic_string_view<char> &response_body,
-    BinCollection &out_bin_collection_1,
-    BinCollection &out_bin_collection_2)
-{
-    auto json = std::unique_ptr<cJSON, decltype(cJSON_free)*>{
-        cJSON_ParseWithLength(response_body.data(), response_body.size()), 
-        cJSON_free
-    };
-    
-    if (json.get() == nullptr)
-    {
+ParseResult parse_response(const std::basic_string_view<char> &response_body,
+                           BinCollection &out_bin_collection_1,
+                           BinCollection &out_bin_collection_2) {
+    auto json = std::unique_ptr<cJSON, decltype(cJSON_free) *>{
+        cJSON_ParseWithLength(response_body.data(), response_body.size()), cJSON_free};
+
+    if (json.get() == nullptr) {
         const char *error_ptr = cJSON_GetErrorPtr();
         std::cerr << "Error parsing JSON: parse failure at " << error_ptr << "\n";
         return ParseResult::InvalidJson;
     }
 
     cJSON *collections = cJSON_GetObjectItem(json.get(), "Collections");
-    if (!cJSON_IsArray(collections))
-    {
+    if (!cJSON_IsArray(collections)) {
         std::cerr << "Error parsing JSON: $.Collections was not an array";
         return ParseResult::InvalidJsonSchema;
     }
 
     cJSON *first_collection = cJSON_GetArrayItem(collections, 0);
-    if (!cJSON_IsObject(first_collection))
-    {
+    if (!cJSON_IsObject(first_collection)) {
         std::cerr << "Error parsing JSON: $.Collections[0] was not an object";
         return ParseResult::InvalidJsonSchema;
     }
 
     ParseResult first_parse_result = parse_collection(first_collection, out_bin_collection_1);
-    if (first_parse_result != ParseResult::Success)
-    {
+    if (first_parse_result != ParseResult::Success) {
         std::cerr << "Failed to parse first collection";
         return first_parse_result;
     }
 
     cJSON *second_collection = cJSON_GetArrayItem(collections, 1);
-    if (!cJSON_IsObject(first_collection))
-    {
+    if (!cJSON_IsObject(first_collection)) {
         std::cerr << "Error parsing JSON: $.Collections[0] was not an object";
         return ParseResult::InvalidJsonSchema;
     }
 
     ParseResult second_parse_result = parse_collection(second_collection, out_bin_collection_2);
-    if (second_parse_result != ParseResult::Success)
-    {
+    if (second_parse_result != ParseResult::Success) {
         std::cerr << "Failed to parse second collection";
         return second_parse_result;
     }
