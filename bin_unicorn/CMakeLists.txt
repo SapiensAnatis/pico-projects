@@ -1,15 +1,8 @@
-include(../pimoroni_pico_import.cmake)
-
-include(${PIMORONI_PICO_PATH}/common/pimoroni_i2c.cmake)
-include(${PIMORONI_PICO_PATH}/common/pimoroni_bus.cmake)
-include(${PIMORONI_PICO_PATH}/libraries/pico_unicorn/pico_unicorn.cmake)
-
 add_executable(bin_unicorn 
     http/tls_client.c 
     http/fetch_data.cpp 
     parsing/parsing.cpp
     ../lib/cJSON/cJSON.c
-    display/display.cpp 
     main.cpp)
 
 include(address.cmake)
@@ -27,8 +20,6 @@ target_link_libraries(bin_unicorn
     pico_stdlib
     hardware_pio
     hardware_dma
-    pico_graphics
-    pico_unicorn
 )
 
 target_include_directories(bin_unicorn PRIVATE

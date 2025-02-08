@@ -1,10 +1,9 @@
 #include <iostream>
 
-#include "pico_unicorn.hpp"
+#include "pico/stdlib.h"
 #include "pico/cyw43_arch.h"
 #include "http/fetch_data.hpp"
 #include "parsing/parsing.hpp"
-#include "display/display.hpp"
 #include "util.hpp"
 
 constexpr uint32_t three_hours_ms = 3 * 60 * 60 * 1000;
@@ -84,8 +83,6 @@ bool work_loop(const std::string address, std::vector<char> &response_buffer)
 
     std::cout << "Next bin collection is " << (int32_t)next_collection.collection_type << " on " << next_collection.date << '\n';
 
-    display_next_collections(next_collection, next_collection_2);
-
     return true;
 }
 
@@ -96,13 +93,11 @@ int main()
     bool connected_to_wifi = false;
     do
     {
-        display_connecting_wifi();
         connected_to_wifi = connect_wifi();
 
         if (!connected_to_wifi)
         {
             cyw43_arch_deinit();
-            display_failure();
             sleep_ms(wifi_connect_fail_sleep);
         }
     } while (!connected_to_wifi);
@@ -116,8 +111,6 @@ int main()
 
     while (true)
     {
-        display_loading();
-
         bool success = work_loop(address, response_buffer);
         if (success)
         {
@@ -130,8 +123,6 @@ int main()
         }
         else
         {
-            display_failure();
-
             std::cout << "Work loop failed! Sleeping for " << std::to_string(error_sleep) << " ms\n";
             sleep_ms(error_sleep);
         }
