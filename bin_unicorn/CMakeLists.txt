@@ -26,7 +26,6 @@ target_include_directories(bin_unicorn PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
     ${CMAKE_CURRENT_LIST_DIR}/..
     ${CMAKE_SOURCE_DIR}/lib/cJSON
-    ${CMAKE_SOURCE_DIR}/lib/date/include
 )
 
 pico_add_extra_outputs(bin_unicorn)

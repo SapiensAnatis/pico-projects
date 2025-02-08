@@ -5,14 +5,20 @@ extern "C" {
 #include "cJSON.h"
 }
 
-#include "date/date.h"
+struct Date {
+    uint16_t year;
+    uint8_t month;
+    uint8_t day;
+};
+
+std::ostream& operator<<(std::ostream& stream, Date date);
 
 /// @brief A type of bin collection.
 enum class CollectionType : uint8_t { DomesticWaste, FoodWaste, Recycling, GardenWaste };
 
 /// @brief A data object representing a bin collection.
 struct BinCollection {
-    date::year_month_day date;
+    Date date;
     CollectionType collection_type;
 };
 
