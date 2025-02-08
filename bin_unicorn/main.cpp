@@ -1,3 +1,4 @@
+#include <array>
 #include <iostream>
 
 #include "pico/stdlib.h"
@@ -44,7 +45,8 @@ bool connect_wifi()
 /// @param address The address to fetch collection data for.
 /// @param response_buffer
 /// @return True if the loop succeeded, otherwise false.
-bool work_loop(const std::string address, std::vector<char> &response_buffer)
+template <size_t BufferSize>
+bool work_loop(const std::string address, std::array<char, BufferSize> &response_buffer)
 {
     int fetch_result = fetch_collection_data(address, response_buffer);
     if (fetch_result != 0)
@@ -106,12 +108,11 @@ int main()
 
     std::string address = url_encode(BIN_UNICORN_HOME_ADDRESS);
 
-    std::vector<char> response_buffer;
-    response_buffer.reserve(response_buffer_size);
+    std::array<char, response_buffer_size> response_buffer;
 
     while (true)
     {
-        bool success = work_loop(address, response_buffer);
+        bool success = work_loop<response_buffer_size>(address, response_buffer);
         if (success)
         {
             // TODO: If the device is started in the day prior to the collection data changing, sleeping here could
