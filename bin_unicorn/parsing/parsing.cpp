@@ -83,15 +83,19 @@ ParseResult parse_response(
     BinCollection &out_bin_collection_1,
     BinCollection &out_bin_collection_2)
 {
-    auto wrapper = cJSONWrapper(cJSON_ParseWithLength(response_body.data(), response_body.size()));
-    if (wrapper.json == nullptr)
+    auto json = std::unique_ptr<cJSON, decltype(cJSON_free)*>{
+        cJSON_ParseWithLength(response_body.data(), response_body.size()), 
+        cJSON_free
+    };
+    
+    if (json.get() == nullptr)
     {
         const char *error_ptr = cJSON_GetErrorPtr();
         std::cerr << "Error parsing JSON: parse failure at " << error_ptr << "\n";
         return ParseResult::InvalidJson;
     }
 
-    cJSON *collections = cJSON_GetObjectItem(wrapper.json, "Collections");
+    cJSON *collections = cJSON_GetObjectItem(json.get(), "Collections");
     if (!cJSON_IsArray(collections))
     {
         std::cerr << "Error parsing JSON: $.Collections was not an array";

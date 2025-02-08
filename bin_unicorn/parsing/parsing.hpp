@@ -24,22 +24,6 @@ struct BinCollection
     CollectionType collection_type;
 };
 
-/// @brief RAII wrapper for a cJSON pointer.
-struct cJSONWrapper
-{
-    cJSON *json;
-
-    cJSONWrapper(cJSON *json)
-    {
-        this->json = json;
-    }
-
-    ~cJSONWrapper()
-    {
-        cJSON_free(this->json);
-    }
-};
-
 /// @brief Represents the result of trying to parse a bin collection.
 enum ParseResult : int8_t
 {
