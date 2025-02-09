@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <string>
 
-static constexpr char hex_digits[] = "0123456789ABCDEF";
+static constexpr char HEX_DIGITS[] = "0123456789ABCDEF";
 
 /// @brief Convert a character to its hex equivalent, e.g. " " -> "20"
 /// @param num The character to convert.
@@ -14,7 +14,7 @@ static std::string to_hex_string(char num) {
 
     while (num > 0) {
         auto remainder = num % 16;
-        result = hex_digits[remainder] + result;
+        result = HEX_DIGITS[remainder] + result;
         num = num / 16;
     }
 

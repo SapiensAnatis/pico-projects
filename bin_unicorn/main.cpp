@@ -8,14 +8,14 @@
 #include "pico/cyw43_arch.h"
 #include "pico/stdlib.h"
 
-constexpr uint32_t three_hours_ms = 3 * 60 * 60 * 1000;
+constexpr uint32_t THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 
-constexpr uint32_t error_sleep = three_hours_ms;
-constexpr uint32_t success_sleep = three_hours_ms * 2;
+constexpr uint32_t ERROR_SLEEP = THREE_HOURS_MS;
+constexpr uint32_t SUCCESS_SLEEP = THREE_HOURS_MS * 2;
 
-constexpr uint32_t wifi_connect_fail_sleep = 5 * 1000;
+constexpr uint32_t WIFI_CONNECT_FAIL_SLEEP = 5 * 1000;
 
-constexpr size_t response_buffer_size = 2048;
+constexpr size_t RESPONSE_BUFFER_SIZE = 2048;
 
 /// @brief Connect to the WiFi network using the WIFI_SSID and WIFI_PASSWORD definitions.
 /// @return True if successful, otherwise false.
@@ -90,7 +90,7 @@ int main() {
 
         if (!connected_to_wifi) {
             cyw43_arch_deinit();
-            sleep_ms(wifi_connect_fail_sleep);
+            sleep_ms(WIFI_CONNECT_FAIL_SLEEP);
         }
     } while (!connected_to_wifi);
 
@@ -98,22 +98,22 @@ int main() {
 
     std::string address = url_encode(BIN_UNICORN_HOME_ADDRESS);
 
-    std::array<char, response_buffer_size> response_buffer;
+    std::array<char, RESPONSE_BUFFER_SIZE> response_buffer;
 
     while (true) {
-        bool success = work_loop<response_buffer_size>(address, response_buffer);
+        bool success = work_loop<RESPONSE_BUFFER_SIZE>(address, response_buffer);
         if (success) {
             // TODO: If the device is started in the day prior to the collection data changing,
             // sleeping here could lead to stale data being displayed. Consider using NTP instead to
             // re-run the work loop at a specific time when an update is expected.
 
-            std::cout << "Work loop succeeded. Sleeping for " << std::to_string(success_sleep)
+            std::cout << "Work loop succeeded. Sleeping for " << std::to_string(SUCCESS_SLEEP)
                       << " ms\n";
-            sleep_ms(success_sleep);
+            sleep_ms(SUCCESS_SLEEP);
         } else {
-            std::cout << "Work loop failed! Sleeping for " << std::to_string(error_sleep)
+            std::cout << "Work loop failed! Sleeping for " << std::to_string(ERROR_SLEEP)
                       << " ms\n";
-            sleep_ms(error_sleep);
+            sleep_ms(ERROR_SLEEP);
         }
     }
 
