@@ -13,7 +13,7 @@ include(pico_extras_import_optional.cmake)
 
 project(JayPicoProjects C CXX ASM)
 set(CMAKE_C_STANDARD 17)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 # set(PICO_CXX_ENABLE_EXCEPTIONS 1)
 
 if (PICO_SDK_VERSION_STRING VERSION_LESS "1.3.0")

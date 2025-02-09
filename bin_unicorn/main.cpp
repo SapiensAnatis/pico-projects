@@ -66,14 +66,15 @@ bool work_loop(const std::string address, std::array<char, BufferSize> &response
         return false;
     }
 
-    parsing::BinCollection next_collection;
-    parsing::BinCollection next_collection_2;
-    parsing::ParseResult parse_result =
-        parse_response(response_view.substr(body_start), next_collection, next_collection_2);
-    if (parse_result != parsing::ParseResult::Success) {
-        std::cout << "Failed to parse response: error=" << std::to_string(parse_result) << "\n";
+    auto parse_result = parsing::parse_response(response_view.substr(body_start));
+
+    if (!parse_result.has_value()) {
+        std::cout << "Failed to parse response: error="
+                  << static_cast<int32_t>(parse_result.error()) << "\n";
         return false;
     }
+
+    auto next_collection = std::get<0>(parse_result.value());
 
     std::cout << "Next bin collection is " << static_cast<int32_t>(next_collection.collection_type)
               << " on " << next_collection.date << '\n';

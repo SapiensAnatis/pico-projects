@@ -1,6 +1,9 @@
 #ifndef PARSING_PARSING_H_
 #define PARSING_PARSING_H_
 
+#include <expected>
+#include <tuple>
+
 extern "C" {
 #include "cJSON.h"
 }
@@ -24,24 +27,21 @@ struct BinCollection {
     CollectionType collection_type;
 };
 
+typedef std::tuple<BinCollection, BinCollection> BinCollectionPair;
+
 /// @brief Represents the result of trying to parse a bin collection.
-enum ParseResult : int8_t {
+enum class ParseError {
     /// @brief The provided JSON was malformed and could not be parsed by cJSON.
-    InvalidJson = -2,
+    InvalidJson = 1,
     /// @brief The provided JSON did not match the expected object format.
-    InvalidJsonSchema = -1,
-    /// @brief The parsing succeeded.
-    Success = 0,
+    InvalidJsonSchema = 2
 };
 
 /// @brief Attempt to parse the two first bin collections in the array.
 /// @param response_body A string_view of the JSON response body returned from the RBC API.
-/// @param out_bin_collection_1 A reference to write the first parsed bin collection to.
-/// @param out_bin_collection_2 A reference to write the second parsed bin collection to.
 /// @returns A value indicating parse status (failure/success).
-ParseResult parse_response(const std::basic_string_view<char> &response_body,
-                           BinCollection &out_bin_collection_1,
-                           BinCollection &out_bin_collection_2);
+std::expected<BinCollectionPair, ParseError>
+parse_response(const std::basic_string_view<char> &response_body);
 
 } // namespace parsing
 

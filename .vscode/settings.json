@@ -85,6 +85,7 @@
     "thread": "cpp",
     "condition_variable": "cpp",
     "list": "cpp",
-    "mutex": "cpp"
+    "mutex": "cpp",
+    "expected": "cpp"
   },
 }

@@ -1,5 +1,6 @@
 #include <cassert>
 #include <charconv>
+#include <expected>
 #include <iomanip>
 #include <iostream>
 #include <map>
@@ -82,39 +83,39 @@ static bool parse_date(const std::string &date_time_string, Date &out_date) {
     return true;
 }
 
-static ParseResult parse_collection(const cJSON *collection, BinCollection &out_bin_collection) {
+static std::expected<BinCollection, ParseError> parse_collection(const cJSON *collection) {
     cJSON *date = cJSON_GetObjectItem(collection, "Date");
     if (!cJSON_IsString(date)) {
         std::cerr << "Error parsing JSON: $.Collections[0].Date was not a string\n";
-        return ParseResult::InvalidJsonSchema;
+        return std::unexpected(ParseError::InvalidJsonSchema);
     }
 
     cJSON *service = cJSON_GetObjectItem(collection, "Service");
     if (!cJSON_IsString(service)) {
         std::cerr << "Error parsing JSON: $.Collections[0].Service was not a string\n";
-        return ParseResult::InvalidJsonSchema;
+        return std::unexpected(ParseError::InvalidJsonSchema);
     }
 
     Date parsed_date;
     if (!parse_date(std::string(date->valuestring), parsed_date)) {
         std::cerr << "Error parsing JSON: $.Collections[0].Date '" << date->valuestring
                   << "' was not a valid date\n";
-        return ParseResult::InvalidJsonSchema;
+        return std::unexpected(ParseError::InvalidJsonSchema);
     }
 
     CollectionType parsed_collection_type;
     if (!parse_collection_string(std::string(service->valuestring), parsed_collection_type)) {
         std::cerr << "Error parsing JSON: $.Collections[0].Service '" << service->valuestring
                   << "' did not match expected format\n";
-        return ParseResult::InvalidJsonSchema;
+        return std::unexpected(ParseError::InvalidJsonSchema);
     }
 
-    out_bin_collection = {};
+    BinCollection out_bin_collection = {};
 
     out_bin_collection.date = parsed_date;
     out_bin_collection.collection_type = parsed_collection_type;
 
-    return ParseResult::Success;
+    return out_bin_collection;
 }
 
 std::ostream &operator<<(std::ostream &stream, Date date) {
@@ -126,49 +127,48 @@ std::ostream &operator<<(std::ostream &stream, Date date) {
     return stream;
 }
 
-ParseResult parse_response(const std::basic_string_view<char> &response_body,
-                           BinCollection &out_bin_collection_1,
-                           BinCollection &out_bin_collection_2) {
+std::expected<BinCollectionPair, ParseError>
+parse_response(const std::basic_string_view<char> &response_body) {
     auto json = std::unique_ptr<cJSON, decltype(cJSON_free) *>{
         cJSON_ParseWithLength(response_body.data(), response_body.size()), cJSON_free};
 
     if (json.get() == nullptr) {
         const char *error_ptr = cJSON_GetErrorPtr();
         std::cerr << "Error parsing JSON: parse failure at " << error_ptr << "\n";
-        return ParseResult::InvalidJson;
+        return std::unexpected(ParseError::InvalidJson);
     }
 
     cJSON *collections = cJSON_GetObjectItem(json.get(), "Collections");
     if (!cJSON_IsArray(collections)) {
         std::cerr << "Error parsing JSON: $.Collections was not an array\n";
-        return ParseResult::InvalidJsonSchema;
+        return std::unexpected(ParseError::InvalidJsonSchema);
     }
 
     cJSON *first_collection = cJSON_GetArrayItem(collections, 0);
     if (!cJSON_IsObject(first_collection)) {
         std::cerr << "Error parsing JSON: $.Collections[0] was not an object\n";
-        return ParseResult::InvalidJsonSchema;
+        return std::unexpected(ParseError::InvalidJsonSchema);
     }
 
-    ParseResult first_parse_result = parse_collection(first_collection, out_bin_collection_1);
-    if (first_parse_result != ParseResult::Success) {
+    auto first_parse_result = parse_collection(first_collection);
+    if (!first_parse_result.has_value()) {
         std::cerr << "Failed to parse first collection\n";
-        return first_parse_result;
+        return std::unexpected(first_parse_result.error());
     }
 
     cJSON *second_collection = cJSON_GetArrayItem(collections, 1);
     if (!cJSON_IsObject(first_collection)) {
         std::cerr << "Error parsing JSON: $.Collections[0] was not an object\n";
-        return ParseResult::InvalidJsonSchema;
+        return std::unexpected(ParseError::InvalidJsonSchema);
     }
 
-    ParseResult second_parse_result = parse_collection(second_collection, out_bin_collection_2);
-    if (second_parse_result != ParseResult::Success) {
+    auto second_parse_result = parse_collection(second_collection);
+    if (!second_parse_result.has_value()) {
         std::cerr << "Failed to parse second collection\n";
-        return second_parse_result;
+        return std::unexpected(second_parse_result.error());
     }
 
-    return ParseResult::Success;
+    return BinCollectionPair{first_parse_result.value(), second_parse_result.value()};
 }
 
 } // namespace parsing
