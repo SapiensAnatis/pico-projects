@@ -44,9 +44,9 @@ bool connect_wifi() {
 /// @return True if the loop succeeded, otherwise false.
 template <size_t BufferSize>
 bool work_loop(const std::string address, std::array<char, BufferSize> &response_buffer) {
-    int fetch_result = http::fetch_collection_data(address, response_buffer);
-    if (fetch_result != 0) {
-        std::cout << "Failed to fetch collection data: error=" << std::to_string(fetch_result)
+    http::HttpsGetResult fetch_result = http::fetch_collection_data(address, response_buffer);
+    if (fetch_result != http::HttpsGetResult::Success) {
+        std::cout << "Failed to fetch collection data: error=" << static_cast<int32_t>(fetch_result)
                   << "\n";
         return false;
     }
@@ -74,7 +74,7 @@ bool work_loop(const std::string address, std::array<char, BufferSize> &response
         return false;
     }
 
-    auto next_collection = std::get<0>(parse_result.value());
+    auto next_collection = std::get<0>(*parse_result);
 
     std::cout << "Next bin collection is " << static_cast<int32_t>(next_collection.collection_type)
               << " on " << next_collection.date << '\n';

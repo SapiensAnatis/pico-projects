@@ -2,9 +2,9 @@
 #define HTTP_HTTP_H_
 
 #include <chrono>
+#include <expected>
 #include <iostream>
 #include <string>
-#include <vector>
 
 extern "C" {
 #include "tls_client.h"
@@ -54,15 +54,22 @@ constexpr const char *READING_GOV_UK_HEADERS = "Accept: application/json\r\n\
 User-Agent: bin_unicorn/0.1.0 RP2040\r\n\
 GitHub-Username: sapiensanatis\r\n";
 
+enum class HttpsGetResult : int8_t {
+    Success = 0,
+    ClientTimeout = -1,
+    FailedToConnect = -2,
+    FailedToAllocState = -3,
+    EmptyResponse = -4,
+};
+
 /// @brief Fetch data on waste collection from Reading Borough Council.
 /// @param buffer The buffer that the UTF-8 response should be written to. Will be demoted to a
 /// pointer in tls_client.c; ensure it has enough space reserved.
 /// @param url_encoded_address The address to fetch collection data for. Must be URL-encoded.
-/// @return A result code from the https_get request. 0 if successful. See tls_client.h
-/// https_get() documentation.
+/// @return A result code from the https_get request.
 template <size_t BufferSize>
-int8_t fetch_collection_data(std::string url_encoded_address,
-                             std::array<char, BufferSize> &buffer) {
+HttpsGetResult fetch_collection_data(std::string url_encoded_address,
+                                     std::array<char, BufferSize> &buffer) {
     const auto uri = "/rbc/mycollections/" + url_encoded_address;
 
     TLS_CLIENT_REQUEST request = {
@@ -81,7 +88,7 @@ int8_t fetch_collection_data(std::string url_encoded_address,
 
     if (result < 0) {
         std::cout << "Request failed; err=" << std::to_string(result) << "\n";
-        return result;
+        return static_cast<HttpsGetResult>(result);
     }
 
     auto end = std::chrono::high_resolution_clock::now();
@@ -89,7 +96,7 @@ int8_t fetch_collection_data(std::string url_encoded_address,
 
     std::cout << "Request completed in " << milliseconds.count() << " ms\n";
 
-    return 0;
+    return HttpsGetResult::Success;
 }
 
 } // namespace http

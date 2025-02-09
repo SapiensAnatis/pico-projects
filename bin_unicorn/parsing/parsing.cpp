@@ -168,7 +168,7 @@ parse_response(const std::basic_string_view<char> &response_body) {
         return std::unexpected(second_parse_result.error());
     }
 
-    return BinCollectionPair{first_parse_result.value(), second_parse_result.value()};
+    return BinCollectionPair{*first_parse_result, *second_parse_result};
 }
 
 } // namespace parsing
