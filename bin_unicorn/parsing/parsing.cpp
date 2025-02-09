@@ -4,7 +4,6 @@
 #include <map>
 #include <string>
 #include <charconv>
-#include <cassert>
 #include <memory>
 
 #include "parsing.hpp"

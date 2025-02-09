@@ -1,11 +1,12 @@
 #include <array>
 #include <iostream>
+#include <string>
 
 #include "http/fetch_data.hpp"
 #include "parsing/parsing.hpp"
 #include "pico/cyw43_arch.h"
 #include "pico/stdlib.h"
-#include "util.hpp"
+#include "./util.hpp"
 
 constexpr uint32_t three_hours_ms = 3 * 60 * 60 * 1000;
 
@@ -74,7 +75,7 @@ bool work_loop(const std::string address, std::array<char, BufferSize> &response
         return false;
     }
 
-    std::cout << "Next bin collection is " << (int32_t)next_collection.collection_type << " on "
+    std::cout << "Next bin collection is " << static_cast<int32_t>(next_collection.collection_type) << " on "
               << next_collection.date << '\n';
 
     return true;

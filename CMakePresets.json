@@ -13,5 +13,15 @@
                 "CMAKE_BUILD_TYPE": "Debug"
             }
         }
+    ],
+    "buildPresets": [
+        {
+            "name": "bin_unicorn",
+            "displayName": "bin_unicorm",
+            "configurePreset": "arm32",
+            "targets": [
+                "bin_unicorn"
+            ]
+        }
     ]
 }
