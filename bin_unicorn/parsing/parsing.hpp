@@ -5,13 +5,15 @@ extern "C" {
 #include "cJSON.h"
 }
 
+namespace parsing {
+
 struct Date {
     uint16_t year;
     uint8_t month;
     uint8_t day;
 };
 
-std::ostream& operator<<(std::ostream& stream, Date date);
+std::ostream &operator<<(std::ostream &stream, Date date);
 
 /// @brief A type of bin collection.
 enum class CollectionType : uint8_t { DomesticWaste, FoodWaste, Recycling, GardenWaste };
@@ -40,5 +42,7 @@ enum ParseResult : int8_t {
 ParseResult parse_response(const std::basic_string_view<char> &response_body,
                            BinCollection &out_bin_collection_1,
                            BinCollection &out_bin_collection_2);
+
+} // namespace parsing
 
 #endif // PARSING_PARSING_H_

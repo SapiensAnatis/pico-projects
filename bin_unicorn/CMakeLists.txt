@@ -1,6 +1,6 @@
 add_executable(bin_unicorn 
     http/tls_client.c 
-    http/fetch_data.hpp
+    http/http.hpp
     parsing/parsing.cpp
     ../lib/cJSON/cJSON.c
     main.cpp)

@@ -1,5 +1,5 @@
-#ifndef HTTP_FETCH_DATA_H_
-#define HTTP_FETCH_DATA_H_
+#ifndef HTTP_HTTP_H_
+#define HTTP_HTTP_H_
 
 #include <chrono>
 #include <iostream>
@@ -10,6 +10,8 @@ extern "C" {
 #include "tls_client.h"
 }
 #include "config.hpp"
+
+namespace http {
 
 /// @brief Fetch data on waste collection from Reading Borough Council.
 /// @param buffer The buffer that the UTF-8 response should be written to. Will be demoted to a
@@ -50,4 +52,6 @@ int8_t fetch_collection_data(std::string url_encoded_address,
     return 0;
 }
 
-#endif // HTTP_FETCH_DATA_H
+} // namespace http
+
+#endif // HTTP_HTTP_H_

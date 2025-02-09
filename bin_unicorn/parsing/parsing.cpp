@@ -1,12 +1,14 @@
 #include <cassert>
-#include <iostream>
-#include <iomanip>
-#include <map>
-#include <string>
 #include <charconv>
+#include <iomanip>
+#include <iostream>
+#include <map>
 #include <memory>
+#include <string>
 
 #include "parsing.hpp"
+
+namespace parsing {
 
 static const std::map<const std::basic_string_view<char>, CollectionType> collection_map = {
     {"Domestic Waste", CollectionType::DomesticWaste},
@@ -31,8 +33,7 @@ static bool parse_collection_string(const std::basic_string_view<char> &service_
 }
 
 template <typename TNumber>
-static bool try_parse_number(const std::string_view &input, TNumber &out)
-{
+static bool try_parse_number(const std::string_view &input, TNumber &out) {
     const std::from_chars_result result =
         std::from_chars(input.data(), input.data() + input.size(), out);
 
@@ -43,12 +44,12 @@ static bool try_parse_number(const std::string_view &input, TNumber &out)
     return true;
 }
 
-static bool parse_date(const std::string &date_time_string, Date& out_date) {
+static bool parse_date(const std::string &date_time_string, Date &out_date) {
     // We receive dates in the format DD/MM/YYYY 00:00:00
     // We don't care about the time
 
     auto string_cursor_pos = date_time_string.begin();
-    
+
     uint8_t day;
     std::string_view day_view{string_cursor_pos, string_cursor_pos + 2};
 
@@ -116,10 +117,10 @@ static ParseResult parse_collection(const cJSON *collection, BinCollection &out_
     return ParseResult::Success;
 }
 
-std::ostream& operator<<(std::ostream& stream, Date date) {
+std::ostream &operator<<(std::ostream &stream, Date date) {
     // Must static cast to 32-bit int otherwise uint8_t is printed as a char
     stream << static_cast<int32_t>(date.year) << "-";
-    stream << std::setfill('0') << std::setw(2) << static_cast<int32_t>(date.month) << "-"; 
+    stream << std::setfill('0') << std::setw(2) << static_cast<int32_t>(date.month) << "-";
     stream << std::setfill('0') << std::setw(2) << static_cast<int32_t>(date.day);
 
     return stream;
@@ -169,3 +170,5 @@ ParseResult parse_response(const std::basic_string_view<char> &response_body,
 
     return ParseResult::Success;
 }
+
+} // namespace parsing

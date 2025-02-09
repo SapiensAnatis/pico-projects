@@ -2,11 +2,11 @@
 #include <iostream>
 #include <string>
 
-#include "http/fetch_data.hpp"
+#include "./util.hpp"
+#include "http/http.hpp"
 #include "parsing/parsing.hpp"
 #include "pico/cyw43_arch.h"
 #include "pico/stdlib.h"
-#include "./util.hpp"
 
 constexpr uint32_t three_hours_ms = 3 * 60 * 60 * 1000;
 
@@ -44,7 +44,7 @@ bool connect_wifi() {
 /// @return True if the loop succeeded, otherwise false.
 template <size_t BufferSize>
 bool work_loop(const std::string address, std::array<char, BufferSize> &response_buffer) {
-    int fetch_result = fetch_collection_data(address, response_buffer);
+    int fetch_result = http::fetch_collection_data(address, response_buffer);
     if (fetch_result != 0) {
         std::cout << "Failed to fetch collection data: error=" << std::to_string(fetch_result)
                   << "\n";
@@ -66,17 +66,17 @@ bool work_loop(const std::string address, std::array<char, BufferSize> &response
         return false;
     }
 
-    BinCollection next_collection;
-    BinCollection next_collection_2;
-    ParseResult parse_result =
+    parsing::BinCollection next_collection;
+    parsing::BinCollection next_collection_2;
+    parsing::ParseResult parse_result =
         parse_response(response_view.substr(body_start), next_collection, next_collection_2);
-    if (parse_result != ParseResult::Success) {
+    if (parse_result != parsing::ParseResult::Success) {
         std::cout << "Failed to parse response: error=" << std::to_string(parse_result) << "\n";
         return false;
     }
 
-    std::cout << "Next bin collection is " << static_cast<int32_t>(next_collection.collection_type) << " on "
-              << next_collection.date << '\n';
+    std::cout << "Next bin collection is " << static_cast<int32_t>(next_collection.collection_type)
+              << " on " << next_collection.date << '\n';
 
     return true;
 }
