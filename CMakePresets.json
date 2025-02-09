@@ -1,0 +1,17 @@
+{
+    "version": 8,
+    "configurePresets": [
+        {
+            "name": "arm32",
+            "displayName": "GCC 12.3.1 arm-none-eabi debug",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+                "CMAKE_C_COMPILER": "$env{ARM_TOOLCHAIN_PATH}/arm-none-eabi-gcc",
+                "CMAKE_CXX_COMPILER": "$env{ARM_TOOLCHAIN_PATH}/arm-none-eabi-g++",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        }
+    ]
+}
