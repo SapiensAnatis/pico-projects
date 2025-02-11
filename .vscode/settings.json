@@ -1,26 +1,42 @@
 {
-  "cmake.configureOnOpen": false,
-  "cmake.statusbar.advanced": {
-    "debug": {
-      "visibility": "hidden"
+  "cmake.options.statusBarVisibility": "hidden",
+  "cmake.options.advanced": {
+    "build": {
+      "statusBarVisibility": "hidden"
     },
     "launch": {
-      "visibility": "hidden"
+      "statusBarVisibility": "hidden"
     },
-    "build": {
-      "visibility": "hidden"
-    },
-    "buildTarget": {
-      "visibility": "hidden"
-    },
+    "debug": {
+      "statusBarVisibility": "hidden"
+    }
   },
-  "C_Cpp.default.cppStandard": "c++20",
-  "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+  "cmake.configureOnEdit": false,
+  "cmake.automaticReconfigure": false,
+  "cmake.configureOnOpen": false,
+  "cmake.generator": "Ninja",
+  "cmake.cmakePath": "${userHome}/.pico-sdk/cmake/v3.29.9/bin/cmake",
+  "C_Cpp.debugShortcut": false,
+  "terminal.integrated.env.windows": {
+    "PICO_SDK_PATH": "${env:USERPROFILE}/.pico-sdk/sdk/2.1.0",
+    "PICO_TOOLCHAIN_PATH": "${env:USERPROFILE}/.pico-sdk/toolchain/13_3_Rel1",
+    "Path": "${env:USERPROFILE}/.pico-sdk/toolchain/13_3_Rel1/bin;${env:USERPROFILE}/.pico-sdk/picotool/2.1.0/picotool;${env:USERPROFILE}/.pico-sdk/cmake/v3.29.9/bin;${env:USERPROFILE}/.pico-sdk/ninja/v1.12.1;${env:PATH}"
+  },
+  "terminal.integrated.env.osx": {
+    "PICO_SDK_PATH": "${env:HOME}/.pico-sdk/sdk/2.1.0",
+    "PICO_TOOLCHAIN_PATH": "${env:HOME}/.pico-sdk/toolchain/13_3_Rel1",
+    "PATH": "${env:HOME}/.pico-sdk/toolchain/13_3_Rel1/bin:${env:HOME}/.pico-sdk/picotool/2.1.0/picotool:${env:HOME}/.pico-sdk/cmake/v3.29.9/bin:${env:HOME}/.pico-sdk/ninja/v1.12.1:${env:PATH}"
+  },
+  "terminal.integrated.env.linux": {
+    "PICO_SDK_PATH": "${env:HOME}/.pico-sdk/sdk/2.1.0",
+    "PICO_TOOLCHAIN_PATH": "${env:HOME}/.pico-sdk/toolchain/13_3_Rel1",
+    "PATH": "${env:HOME}/.pico-sdk/toolchain/13_3_Rel1/bin:${env:HOME}/.pico-sdk/picotool/2.1.0/picotool:${env:HOME}/.pico-sdk/cmake/v3.29.9/bin:${env:HOME}/.pico-sdk/ninja/v1.12.1:${env:PATH}"
+  },
+  "raspberry-pi-pico.cmakeAutoConfigure": false,
+  "raspberry-pi-pico.useCmakeTools": true,
+  "raspberry-pi-pico.cmakePath": "${HOME}/.pico-sdk/cmake/v3.29.9/bin/cmake",
+  "raspberry-pi-pico.ninjaPath": "${HOME}/.pico-sdk/ninja/v1.12.1/ninja",
   "files.associations": {
-    "*.h": "c",
-    "*.hpp": "cpp",
-    "*.c": "c",
-    "*.cpp": "cpp",
     "array": "cpp",
     "atomic": "cpp",
     "bit": "cpp",
@@ -37,15 +53,18 @@
     "cstdint": "cpp",
     "cstdio": "cpp",
     "cstdlib": "cpp",
+    "cstring": "cpp",
     "ctime": "cpp",
     "cwchar": "cpp",
     "cwctype": "cpp",
     "deque": "cpp",
     "map": "cpp",
+    "set": "cpp",
     "string": "cpp",
     "unordered_map": "cpp",
     "vector": "cpp",
     "exception": "cpp",
+    "expected": "cpp",
     "algorithm": "cpp",
     "functional": "cpp",
     "iterator": "cpp",
@@ -61,6 +80,7 @@
     "type_traits": "cpp",
     "utility": "cpp",
     "format": "cpp",
+    "fstream": "cpp",
     "initializer_list": "cpp",
     "iomanip": "cpp",
     "iosfwd": "cpp",
@@ -74,18 +94,9 @@
     "sstream": "cpp",
     "stdexcept": "cpp",
     "streambuf": "cpp",
+    "cfenv": "cpp",
     "cinttypes": "cpp",
     "typeinfo": "cpp",
-    "variant": "cpp",
-    "codecvt": "cpp",
-    "cstring": "cpp",
-    "fstream": "cpp",
-    "semaphore": "cpp",
-    "stop_token": "cpp",
-    "thread": "cpp",
-    "condition_variable": "cpp",
-    "list": "cpp",
-    "mutex": "cpp",
-    "expected": "cpp"
-  },
+    "variant": "cpp"
+  }
 }
