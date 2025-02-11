@@ -8,6 +8,7 @@
 #include <string>
 
 #include "parsing.hpp"
+#include "util.hpp"
 
 namespace parsing {
 
@@ -30,18 +31,6 @@ static bool parse_collection_string(const std::basic_string_view<char> &service_
     }
 
     out_collection_type = collection->second;
-    return true;
-}
-
-template <typename TNumber>
-static bool try_parse_number(const std::string_view &input, TNumber &out) {
-    const std::from_chars_result result =
-        std::from_chars(input.data(), input.data() + input.size(), out);
-
-    if (result.ec == std::errc::invalid_argument || result.ec == std::errc::result_out_of_range) {
-        return false;
-    }
-
     return true;
 }
 

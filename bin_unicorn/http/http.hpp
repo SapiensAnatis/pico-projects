@@ -14,6 +14,7 @@ namespace http {
 
 using namespace std::string_view_literals;
 
+namespace {
 // ISRG Root X1
 // Expiry: Mon, 04 Jun 2035 11:04:38 GMT
 constexpr uint8_t READING_GOV_UK_ROOT_CERT[] = "-----BEGIN CERTIFICATE-----\n\
@@ -53,6 +54,7 @@ constexpr const char *READING_GOV_UK_HOST = "api.reading.gov.uk";
 constexpr const char *READING_GOV_UK_HEADERS = "Accept: application/json\r\n\
 User-Agent: bin_unicorn/0.1.0 RP2040\r\n\
 GitHub-Username: sapiensanatis\r\n";
+} // namespace
 
 enum class HttpsGetResult : int8_t {
     Success = 0,
@@ -60,6 +62,17 @@ enum class HttpsGetResult : int8_t {
     FailedToConnect = -2,
     FailedToAllocState = -3,
     EmptyResponse = -4,
+};
+
+enum class HttpsParseResult : int8_t {
+    Failure = -1,
+};
+
+struct HttpResponse {
+    uint16_t status_code;
+    uint16_t content_length;
+    std::string content_type;
+    std::string_view body;
 };
 
 /// @brief Fetch data on waste collection from Reading Borough Council.
@@ -98,6 +111,79 @@ HttpsGetResult fetch_collection_data(std::string url_encoded_address,
 
     return HttpsGetResult::Success;
 }
+
+template <size_t BufferSize>
+std::expected<HttpResponse, HttpsParseResult> parse_response(const std::array<char, BufferSize> &buffer) {
+    /* A raw HTTP response looks like:
+     *
+     *   HTTP/1.1 200 OK
+     *   Server: nginx
+     *   Date: Tue, 11 Feb 2025 22:17:30 GMT
+     *   Content-Type: application/json
+     *   Content-Length: 1031
+     *   Connection: close
+     *   Access-Control-Allow-Origin: https://api.reading.gov.uk
+     *   Vary: Origin
+     *   
+     *   {
+     *     "Collections": [
+     * ... <rest of the response body>
+     * 
+     * Each line is delimeted by \r\n.
+     */
+
+    std::string_view buffer_string(buffer.data(), BufferSize);
+    std::string_view::iterator line_end;
+
+    auto status_code_start = sizeof("HTTP/1.1");
+    auto status_code_size = 3;
+
+    if (!buffer_string.starts_with("HTTP/1.1") || buffer_string.length() < sizeof("HTTP/1.1") + status_code_size) {
+        return std::unexpected(HttpsParseResult::Failure);
+    }
+
+    std::string_view status_code_view(buffer_string.begin() + status_code_start, status_code_size);
+    uint16_t status_code;
+    if (!try_parse_number(status_code_view, status_code)) {
+        std::cerr << "Failed to parse status code\n";
+        return std::unexpected(HttpsParseResult::Failure);
+    }
+
+    auto content_length_start = buffer_string.find("Content-Length:");
+    auto content_length_end = buffer_string.find("\r\n", content_length_start);
+
+    if (content_length_start == std::string::npos || content_length_end == std::string::npos) {
+        std::cerr << "Failed to parse Content-Length\n";
+        return std::unexpected(HttpsParseResult::Failure);
+    }
+
+    std::string_view content_length_view(buffer_string.begin() + content_length_start + sizeof("Content-Length:"), buffer_string.begin() + content_length_end);
+    uint16_t content_length;
+    if (!try_parse_number(content_length_view, status_code)) {
+        return std::unexpected(HttpsParseResult::Failure);
+    }
+
+    auto content_type_start = buffer_string.find("Content-Type:");
+    auto content_type_end = buffer_string.find("\r\n", content_type_start);
+
+    if (content_length_start == std::string::npos || content_length_end == std::string::npos) {
+        std::cerr << "Failed to parse Content-Type\n";
+        return std::unexpected(HttpsParseResult::Failure);
+    }
+
+    std::string content_type(buffer_string.begin() + content_type_start, buffer_string.begin() + content_type_end);
+
+    auto body_start = buffer_string.find("\r\n\r\n");
+    if (body_start == std::string::npos) {
+        std::cerr << "Failed to find start of response body\n";
+        return std::unexpected(HttpsParseResult::Failure);
+    }
+
+    std::string_view body(buffer_string.begin() + body_start, buffer_string.end());
+    
+    return HttpResponse{.status_code = status_code, .content_length = content_length, .content_type = content_type, .body = body};
+}
+
 
 } // namespace http
 

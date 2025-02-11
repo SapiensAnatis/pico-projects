@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <string>
+#include <charconv>
 
 static constexpr char HEX_DIGITS[] = "0123456789ABCDEF";
 
@@ -24,7 +25,7 @@ static std::string to_hex_string(char num) {
 /// @brief URL-encode a string, escaping any non-URL-safe characters.
 /// @param input The input string.
 /// @return The input string, URL-encoded.
-std::string url_encode(std::string input) {
+inline std::string url_encode(std::string input) {
     std::string result;
 
     for (char &c : input) {
@@ -37,6 +38,18 @@ std::string url_encode(std::string input) {
     }
 
     return result;
+}
+
+template <typename TNumber>
+static bool try_parse_number(const std::string_view &input, TNumber &out) {
+    const std::from_chars_result result =
+        std::from_chars(input.data(), input.data() + input.size(), out);
+
+    if (result.ec == std::errc::invalid_argument || result.ec == std::errc::result_out_of_range) {
+        return false;
+    }
+
+    return true;
 }
 
 #endif // UTIL_H_

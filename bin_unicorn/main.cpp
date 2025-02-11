@@ -44,6 +44,9 @@ bool connect_wifi() {
 /// @return True if the loop succeeded, otherwise false.
 template <size_t BufferSize>
 bool work_loop(const std::string address, std::array<char, BufferSize> &response_buffer) {
+    // Zero out buffer to avoid being able to read uninitialized memory via Content-Length attacks
+    response_buffer.fill(0);
+
     http::HttpsGetResult fetch_result = http::fetch_collection_data(address, response_buffer);
     if (fetch_result != http::HttpsGetResult::Success) {
         std::cout << "Failed to fetch collection data: error=" << static_cast<int32_t>(fetch_result)
@@ -51,22 +54,34 @@ bool work_loop(const std::string address, std::array<char, BufferSize> &response
         return false;
     }
 
-    // This is not really standards-compliant but it seems to work for now.
-    // Could be a bit more intelligent and read the Content-Length header instead
-    if (response_buffer.back() != 0) {
-        std::cout << "Response buffer was not null-terminated - this is not supported.\n";
+    std::expected<http::HttpResponse, http::HttpsParseResult> response_parse_result = http::parse_response(response_buffer);
+    if (!response_parse_result.has_value()) {
+        std::cout << "Failed to parse collection data: error=" << static_cast<int32_t>(response_parse_result.error()) 
+                  << "\n";
         return false;
     }
 
-    std::string_view response_view(response_buffer.data());
-    int body_start = response_view.find("\r\n\r\n");
-    int nr = response_view.find("OK");
-    if (body_start == std::string::npos) {
-        std::cout << "Failed to find start of response body\n";
+    auto response = *response_parse_result;
+
+    if (response.status_code != 200) {
+        std::cout << "Failed to parse collection data: received non-200 status code: " << response.status_code << "\n";
+        return false;
+    }
+    
+    if (response.content_type != "application/json") {
+        std::cout << "Failed to parse collection data: non 'application/json' Content-Type: '" << response.content_type << "'\n";
         return false;
     }
 
-    auto parse_result = parsing::parse_response(response_view.substr(body_start));
+    if (response.content_length > BufferSize) {
+        // The actual buffer overflow is guarded against in tls_client.c, however we should still check the header
+        // to detect that the buffer does not contain the complete response.
+        std::cout << "Failed to parse collection data: Content-Length of " << static_cast<int32_t>(response.content_length) 
+                  << " exceeds buffer size of " << static_cast<int32_t>(BufferSize) << "\n";
+        return false;
+    }
+
+    std::expected<parsing::BinCollectionPair, parsing::ParseError> parse_result = parsing::parse_response(response.body);
 
     if (!parse_result.has_value()) {
         std::cout << "Failed to parse response: error="
