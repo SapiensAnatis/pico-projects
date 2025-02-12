@@ -159,19 +159,19 @@ std::expected<HttpResponse, HttpsParseResult> parse_response(const std::array<ch
 
     std::string_view content_length_view(buffer_string.begin() + content_length_start + sizeof("Content-Length:"), buffer_string.begin() + content_length_end);
     uint16_t content_length;
-    if (!try_parse_number(content_length_view, status_code)) {
+    if (!try_parse_number(content_length_view, content_length)) {
         return std::unexpected(HttpsParseResult::Failure);
     }
 
     auto content_type_start = buffer_string.find("Content-Type:");
     auto content_type_end = buffer_string.find("\r\n", content_type_start);
 
-    if (content_length_start == std::string::npos || content_length_end == std::string::npos) {
+    if (content_length_start == std::string::npos || content_type_end == std::string::npos) {
         std::cerr << "Failed to parse Content-Type\n";
         return std::unexpected(HttpsParseResult::Failure);
     }
 
-    std::string content_type(buffer_string.begin() + content_type_start, buffer_string.begin() + content_type_end);
+    std::string content_type(buffer_string.begin() + content_type_start + sizeof("Content-Type:"), buffer_string.begin() + content_type_end);
 
     auto body_start = buffer_string.find("\r\n\r\n");
     if (body_start == std::string::npos) {

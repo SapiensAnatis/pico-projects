@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <string>
 #include <charconv>
+#include <iostream>
 
 static constexpr char HEX_DIGITS[] = "0123456789ABCDEF";
 
@@ -42,6 +43,8 @@ inline std::string url_encode(std::string input) {
 
 template <typename TNumber>
 static bool try_parse_number(const std::string_view &input, TNumber &out) {
+    std::cout << "Parsing number from " << input << "\n";
+    
     const std::from_chars_result result =
         std::from_chars(input.data(), input.data() + input.size(), out);
 
