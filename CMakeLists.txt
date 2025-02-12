@@ -53,6 +53,7 @@ else()
                     "sets these variables.")
 endif()
 
+# TODO: move this up and fix warnings
 add_compile_options(-Wall
     -Wextra
     -Wpedantic

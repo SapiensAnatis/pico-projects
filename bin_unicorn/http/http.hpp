@@ -5,6 +5,7 @@
 #include <expected>
 #include <iostream>
 #include <string>
+#include <optional>
 
 extern "C" {
 #include "tls_client.h"
@@ -125,6 +126,12 @@ std::optional<std::string_view> find_header_value(const std::string_view &buffer
     return std::string_view(buffer_string.begin() + header_value_start, buffer_string.begin() + header_end);
 }
 
+consteval int string_length(const std::string arg) {
+    // Get string length without pesky null terminator which is included in sizeof()
+    return arg.size();
+}
+
+// TODO: use span<char> and remove need for template?
 template <size_t BufferSize>
 std::expected<HttpResponse, HttpsParseResult> parse_response(const std::array<char, BufferSize> &buffer) {
     /* A raw HTTP response looks like:
@@ -148,10 +155,10 @@ std::expected<HttpResponse, HttpsParseResult> parse_response(const std::array<ch
     std::string_view buffer_string(buffer.data(), BufferSize);
     std::string_view::iterator line_end;
 
-    auto status_code_start = sizeof("HTTP/1.1");
+    auto status_code_start = string_length("HTTP/1.1 ");
     auto status_code_size = 3;
 
-    if (!buffer_string.starts_with("HTTP/1.1") || buffer_string.length() < sizeof("HTTP/1.1") + status_code_size) {
+    if (!buffer_string.starts_with("HTTP/1.1") || buffer_string.length() < string_length("HTTP/1.1 ") + status_code_size) {
         return std::unexpected(HttpsParseResult::Failure);
     }
 
@@ -178,13 +185,15 @@ std::expected<HttpResponse, HttpsParseResult> parse_response(const std::array<ch
 
     std::string content_type(*content_type_view);
 
-    auto body_start = buffer_string.find("\r\n\r\n");
-    if (body_start == std::string::npos) {
-        std::cerr << "Failed to find start of response body\n";
+    auto headers_end = buffer_string.find("\r\n\r\n");
+    if (headers_end == std::string::npos) {
+        std::cerr << "Failed to find end of response headers\n";
         return std::unexpected(HttpsParseResult::Failure);
     }
 
-    std::string_view body(buffer_string.begin() + body_start, std::min(static_cast<size_t>(content_length), BufferSize));
+    auto body_start = headers_end + string_length("\r\n\r\n");
+
+    std::string_view body(buffer_string.begin() + headers_end + string_length("\r\n\r\n"), std::min(static_cast<size_t>(content_length), BufferSize));
     
     return HttpResponse{.status_code = status_code, .content_length = content_length, .content_type = content_type, .body = body};
 }
