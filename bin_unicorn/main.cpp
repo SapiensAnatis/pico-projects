@@ -84,7 +84,7 @@ bool work_loop(const std::string address, std::array<char, BufferSize> &response
     std::expected<parsing::BinCollectionPair, parsing::ParseError> parse_result = parsing::parse_response(response.body);
 
     if (!parse_result.has_value()) {
-        std::cout << "Failed to parse response: error="
+        std::cout << "Failed to parse collection data: error="
                   << static_cast<int32_t>(parse_result.error()) << "\n";
         return false;
     }

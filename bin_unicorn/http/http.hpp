@@ -14,7 +14,6 @@ namespace http {
 
 using namespace std::string_view_literals;
 
-namespace {
 // ISRG Root X1
 // Expiry: Mon, 04 Jun 2035 11:04:38 GMT
 constexpr uint8_t READING_GOV_UK_ROOT_CERT[] = "-----BEGIN CERTIFICATE-----\n\
@@ -54,7 +53,6 @@ constexpr const char *READING_GOV_UK_HOST = "api.reading.gov.uk";
 constexpr const char *READING_GOV_UK_HEADERS = "Accept: application/json\r\n\
 User-Agent: bin_unicorn/0.1.0 RP2040\r\n\
 GitHub-Username: sapiensanatis\r\n";
-} // namespace
 
 enum class HttpsGetResult : int8_t {
     Success = 0,
@@ -112,6 +110,21 @@ HttpsGetResult fetch_collection_data(std::string url_encoded_address,
     return HttpsGetResult::Success;
 }
 
+std::optional<std::string_view> find_header_value(const std::string_view &buffer_string, const std::string &header_name) {
+    auto header_start = buffer_string.find(header_name );
+    auto header_end = buffer_string.find("\r\n", header_start);
+
+    if (header_start == std::string::npos || header_end == std::string::npos) {
+        std::cerr << "Failed to find header: " << header_name << "\n";
+        return std::nullopt;
+    }
+
+    // +2 for colon and space before value. 
+    auto header_value_start = header_start + header_name.length() + 2; 
+
+    return std::string_view(buffer_string.begin() + header_value_start, buffer_string.begin() + header_end);
+}
+
 template <size_t BufferSize>
 std::expected<HttpResponse, HttpsParseResult> parse_response(const std::array<char, BufferSize> &buffer) {
     /* A raw HTTP response looks like:
@@ -149,29 +162,21 @@ std::expected<HttpResponse, HttpsParseResult> parse_response(const std::array<ch
         return std::unexpected(HttpsParseResult::Failure);
     }
 
-    auto content_length_start = buffer_string.find("Content-Length:");
-    auto content_length_end = buffer_string.find("\r\n", content_length_start);
-
-    if (content_length_start == std::string::npos || content_length_end == std::string::npos) {
+    auto content_length_view = find_header_value(buffer_string, "Content-Length");
+    uint16_t content_length;
+    if (!content_length_view || !try_parse_number(*content_length_view, content_length)) {
         std::cerr << "Failed to parse Content-Length\n";
         return std::unexpected(HttpsParseResult::Failure);
     }
 
-    std::string_view content_length_view(buffer_string.begin() + content_length_start + sizeof("Content-Length:"), buffer_string.begin() + content_length_end);
-    uint16_t content_length;
-    if (!try_parse_number(content_length_view, content_length)) {
-        return std::unexpected(HttpsParseResult::Failure);
-    }
-
-    auto content_type_start = buffer_string.find("Content-Type:");
-    auto content_type_end = buffer_string.find("\r\n", content_type_start);
-
-    if (content_length_start == std::string::npos || content_type_end == std::string::npos) {
+   
+    auto content_type_view = find_header_value(buffer_string, "Content-Type");
+    if (!content_type_view) {
         std::cerr << "Failed to parse Content-Type\n";
         return std::unexpected(HttpsParseResult::Failure);
     }
 
-    std::string content_type(buffer_string.begin() + content_type_start + sizeof("Content-Type:"), buffer_string.begin() + content_type_end);
+    std::string content_type(*content_type_view);
 
     auto body_start = buffer_string.find("\r\n\r\n");
     if (body_start == std::string::npos) {
@@ -179,7 +184,7 @@ std::expected<HttpResponse, HttpsParseResult> parse_response(const std::array<ch
         return std::unexpected(HttpsParseResult::Failure);
     }
 
-    std::string_view body(buffer_string.begin() + body_start, buffer_string.end());
+    std::string_view body(buffer_string.begin() + body_start, std::min(static_cast<size_t>(content_length), BufferSize));
     
     return HttpResponse{.status_code = status_code, .content_length = content_length, .content_type = content_type, .body = body};
 }
