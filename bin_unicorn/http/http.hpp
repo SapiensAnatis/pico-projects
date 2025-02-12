@@ -126,7 +126,7 @@ std::optional<std::string_view> find_header_value(const std::string_view &buffer
     return std::string_view(buffer_string.begin() + header_value_start, buffer_string.begin() + header_end);
 }
 
-consteval int string_length(const std::string arg) {
+consteval uint8_t string_length(const std::string arg) {
     // Get string length without pesky null terminator which is included in sizeof()
     return arg.size();
 }
