@@ -55,7 +55,7 @@ constexpr const char *READING_GOV_UK_HEADERS = "Accept: application/json\r\n\
 User-Agent: bin_unicorn/0.1.0 RP2040\r\n\
 GitHub-Username: sapiensanatis\r\n";
 
-consteval uint8_t string_length(const std::string &arg) {
+consteval size_t string_length(const std::string &arg) {
     // Get string length without pesky null terminator which is included in sizeof()
     return arg.size();
 }
@@ -128,7 +128,6 @@ std::expected<HttpResponse, HttpsParseResult> parse_response(const std::span<cha
      */
 
     std::string_view buffer_string(buffer.data(), buffer.size());
-    std::string_view::iterator line_end;
 
     auto status_code_start = string_length("HTTP/1.1 ");
     auto status_code_size = 3;
@@ -161,8 +160,6 @@ std::expected<HttpResponse, HttpsParseResult> parse_response(const std::span<cha
         std::cerr << "Failed to find end of response headers\n";
         return std::unexpected(HttpsParseResult::Failure);
     }
-
-    auto body_start = headers_end + string_length("\r\n\r\n");
 
     std::string_view body(buffer_string.begin() + headers_end + string_length("\r\n\r\n"),
                           std::min(static_cast<size_t>(content_length), buffer.size()));

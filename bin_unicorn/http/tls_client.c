@@ -69,7 +69,7 @@ static err_t tls_client_close(void *arg) {
     return err;
 }
 
-static err_t tls_client_connected(void *arg, struct altcp_pcb *pcb, err_t err) {
+static err_t tls_client_connected(void *arg, [[maybe_unused]] struct altcp_pcb *pcb, err_t err) {
     TLS_CLIENT_T *state = (TLS_CLIENT_T *)arg;
     if (err != ERR_OK) {
         printf("Connect failed; err=%d\n", err);
@@ -87,7 +87,7 @@ static err_t tls_client_connected(void *arg, struct altcp_pcb *pcb, err_t err) {
     return ERR_OK;
 }
 
-static err_t tls_client_poll(void *arg, struct altcp_pcb *pcb) {
+static err_t tls_client_poll(void *arg, [[maybe_unused]] struct altcp_pcb *pcb) {
     TLS_CLIENT_T *state = (TLS_CLIENT_T *)arg;
     printf("Request timed out\n");
     state->error = PICO_ERROR_TIMEOUT;
@@ -101,7 +101,8 @@ static void tls_client_err(void *arg, err_t err) {
     state->error = PICO_ERROR_GENERIC;
 }
 
-static err_t tls_client_recv(void *arg, struct altcp_pcb *pcb, struct pbuf *p, err_t err) {
+static err_t tls_client_recv(void *arg, struct altcp_pcb *pcb, struct pbuf *p,
+                             [[maybe_unused]] err_t err) {
     TLS_CLIENT_T *state = (TLS_CLIENT_T *)arg;
     if (!p) {
         printf("Connection closed\n");
@@ -246,9 +247,10 @@ int8_t https_get(TLS_CLIENT_REQUEST request, char *restrict buffer, uint16_t buf
     }
 
     if (state->error != 0) {
+        int32_t error = state->error;
         free(state);
         altcp_tls_free_config(tls_config);
-        return state->error;
+        return error;
     }
 
     int response_length = state->response_cursor;
