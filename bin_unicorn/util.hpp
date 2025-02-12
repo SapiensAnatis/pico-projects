@@ -1,10 +1,10 @@
 #ifndef UTIL_H_
 #define UTIL_H_
 
-#include <cstdint>
-#include <string>
 #include <charconv>
+#include <cstdint>
 #include <iostream>
+#include <string>
 
 static constexpr char HEX_DIGITS[] = "0123456789ABCDEF";
 
@@ -41,6 +41,11 @@ inline std::string url_encode(std::string input) {
     return result;
 }
 
+/// @brief Attempt to parse a string into a number.
+/// @tparam TNumber The numeric type to parse into.
+/// @param input The input string.
+/// @param out A reference to a number to assign the result to, if parsing is successful.
+/// @return A boolean indicating whether parsing succeeded.
 template <typename TNumber>
 static bool try_parse_number(const std::string_view &input, TNumber &out) {
     const std::from_chars_result result =

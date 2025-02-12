@@ -6,20 +6,21 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <string_view>
 
 #include "parsing.hpp"
 #include "util.hpp"
 
 namespace parsing {
 
-static const std::map<const std::basic_string_view<char>, CollectionType> collection_map = {
+static const std::map<std::string_view, CollectionType> collection_map = {
     {"Domestic Waste", CollectionType::DomesticWaste},
     {"Food Waste", CollectionType::FoodWaste},
     {"Recycling", CollectionType::Recycling},
     {"Garden Waste", CollectionType::GardenWaste}};
 
-static bool parse_collection_string(const std::basic_string_view<char> &service_string,
-                                    CollectionType &out_collection_type) {
+static bool try_parse_collection_string(const std::string_view &service_string,
+                                        CollectionType &out_collection_type) {
     int first_word_end = service_string.find(" Collection Service");
     if (first_word_end == -1) {
         return false;
@@ -34,7 +35,7 @@ static bool parse_collection_string(const std::basic_string_view<char> &service_
     return true;
 }
 
-static bool parse_date(const std::string_view &date_time_string, Date &out_date) {
+static bool try_parse_date(const std::string_view &date_time_string, Date &out_date) {
     // We receive dates in the format DD/MM/YYYY 00:00:00
     // We don't care about the time
 
@@ -86,14 +87,15 @@ static std::expected<BinCollection, ParseError> parse_collection(const cJSON *co
     }
 
     Date parsed_date;
-    if (!parse_date(std::string(date->valuestring), parsed_date)) {
+    if (!try_parse_date(std::string_view(date->valuestring), parsed_date)) {
         std::cerr << "Error parsing JSON: $.Collections[0].Date '" << date->valuestring
                   << "' was not a valid date\n";
         return std::unexpected(ParseError::InvalidJsonSchema);
     }
 
     CollectionType parsed_collection_type;
-    if (!parse_collection_string(std::string(service->valuestring), parsed_collection_type)) {
+    if (!try_parse_collection_string(std::string_view(service->valuestring),
+                                     parsed_collection_type)) {
         std::cerr << "Error parsing JSON: $.Collections[0].Service '" << service->valuestring
                   << "' did not match expected format\n";
         return std::unexpected(ParseError::InvalidJsonSchema);
@@ -116,8 +118,7 @@ std::ostream &operator<<(std::ostream &stream, Date date) {
     return stream;
 }
 
-std::expected<BinCollectionPair, ParseError>
-parse_response(const std::basic_string_view<char> &response_body) {
+std::expected<BinCollectionPair, ParseError> parse_response(const std::string_view &response_body) {
     auto json = std::unique_ptr<cJSON, decltype(cJSON_free) *>{
         cJSON_ParseWithLength(response_body.data(), response_body.size()), cJSON_free};
 
