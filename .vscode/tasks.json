@@ -53,6 +53,23 @@
             "windows": {
                 "command": "${env:USERPROFILE}/.pico-sdk/openocd/0.12.0+dev/openocd.exe",
             }
+        },
+        {
+            "label": "Minicom",
+            "type": "process",
+            "command": "sudo",
+            "args": [
+               "minicom",
+               "-D",
+               "/dev/ttyACM0",
+               "-b",
+               "115200"
+            ],
+            "problemMatcher": [],
+            "windows": {
+                "command": "minicom"
+            }
+            
         }
     ]
 }
