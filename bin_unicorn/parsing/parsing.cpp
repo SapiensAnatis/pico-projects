@@ -41,7 +41,7 @@ static bool try_parse_date(const std::string_view &date_time_string, Date &out_d
 
     auto string_cursor_pos = date_time_string.begin();
 
-    uint8_t day;
+    uint8_t day = 0;
     std::string_view day_view{string_cursor_pos, string_cursor_pos + 2};
 
     if (!try_parse_number(day_view, day)) {
@@ -51,7 +51,7 @@ static bool try_parse_date(const std::string_view &date_time_string, Date &out_d
     string_cursor_pos += 3;
     assert(string_cursor_pos != date_time_string.end());
 
-    uint8_t month;
+    uint8_t month = 0;
     std::string_view month_view{string_cursor_pos, string_cursor_pos + 2};
 
     if (!try_parse_number(month_view, month)) {
@@ -61,7 +61,7 @@ static bool try_parse_date(const std::string_view &date_time_string, Date &out_d
     string_cursor_pos += 3;
     assert(string_cursor_pos != date_time_string.end());
 
-    uint16_t year;
+    uint16_t year = 0;
     std::string_view year_view{string_cursor_pos, string_cursor_pos + 4};
 
     if (!try_parse_number(year_view, year)) {
