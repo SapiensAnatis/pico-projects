@@ -2,18 +2,18 @@
 #define HTTP_HTTP_H_
 
 #include <chrono>
+#include <cstdint>
 #include <expected>
 #include <iostream>
-#include <string>
 #include <optional>
+#include <span>
+#include <string>
 
 extern "C" {
 #include "tls_client.h"
 }
 
 namespace http {
-
-using namespace std::string_view_literals;
 
 // ISRG Root X1
 // Expiry: Mon, 04 Jun 2035 11:04:38 GMT
@@ -70,7 +70,7 @@ enum class HttpsParseResult : int8_t {
 struct HttpResponse {
     uint16_t status_code;
     uint16_t content_length;
-    std::string content_type;
+    std::optional<std::string_view> content_type;
     std::string_view body;
 };
 
@@ -79,9 +79,7 @@ struct HttpResponse {
 /// pointer in tls_client.c; ensure it has enough space reserved.
 /// @param url_encoded_address The address to fetch collection data for. Must be URL-encoded.
 /// @return A result code from the https_get request.
-template <size_t BufferSize>
-HttpsGetResult fetch_collection_data(std::string url_encoded_address,
-                                     std::array<char, BufferSize> &buffer) {
+HttpsGetResult fetch_collection_data(std::string url_encoded_address, std::span<char> &buffer) {
     const auto uri = "/rbc/mycollections/" + url_encoded_address;
 
     TLS_CLIENT_REQUEST request = {
@@ -96,7 +94,7 @@ HttpsGetResult fetch_collection_data(std::string url_encoded_address,
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    int8_t result = https_get(request, buffer.data(), BufferSize);
+    int8_t result = https_get(request, buffer.data(), buffer.size());
 
     if (result < 0) {
         std::cout << "Request failed; err=" << std::to_string(result) << "\n";
@@ -111,8 +109,9 @@ HttpsGetResult fetch_collection_data(std::string url_encoded_address,
     return HttpsGetResult::Success;
 }
 
-std::optional<std::string_view> find_header_value(const std::string_view &buffer_string, const std::string &header_name) {
-    auto header_start = buffer_string.find(header_name );
+std::optional<std::string_view> find_header_value(const std::string_view &buffer_string,
+                                                  const std::string &header_name) {
+    auto header_start = buffer_string.find(header_name);
     auto header_end = buffer_string.find("\r\n", header_start);
 
     if (header_start == std::string::npos || header_end == std::string::npos) {
@@ -120,10 +119,11 @@ std::optional<std::string_view> find_header_value(const std::string_view &buffer
         return std::nullopt;
     }
 
-    // +2 for colon and space before value. 
-    auto header_value_start = header_start + header_name.length() + 2; 
+    // +2 for colon and space before value.
+    auto header_value_start = header_start + header_name.length() + 2;
 
-    return std::string_view(buffer_string.begin() + header_value_start, buffer_string.begin() + header_end);
+    return std::string_view(buffer_string.begin() + header_value_start,
+                            buffer_string.begin() + header_end);
 }
 
 consteval uint8_t string_length(const std::string arg) {
@@ -132,8 +132,7 @@ consteval uint8_t string_length(const std::string arg) {
 }
 
 // TODO: use span<char> and remove need for template?
-template <size_t BufferSize>
-std::expected<HttpResponse, HttpsParseResult> parse_response(const std::array<char, BufferSize> &buffer) {
+std::expected<HttpResponse, HttpsParseResult> parse_response(const std::span<char> &buffer) {
     /* A raw HTTP response looks like:
      *
      *   HTTP/1.1 200 OK
@@ -144,21 +143,22 @@ std::expected<HttpResponse, HttpsParseResult> parse_response(const std::array<ch
      *   Connection: close
      *   Access-Control-Allow-Origin: https://api.reading.gov.uk
      *   Vary: Origin
-     *   
+     *
      *   {
      *     "Collections": [
      * ... <rest of the response body>
-     * 
+     *
      * Each line is delimeted by \r\n.
      */
 
-    std::string_view buffer_string(buffer.data(), BufferSize);
+    std::string_view buffer_string(buffer.data(), buffer.size());
     std::string_view::iterator line_end;
 
     auto status_code_start = string_length("HTTP/1.1 ");
     auto status_code_size = 3;
 
-    if (!buffer_string.starts_with("HTTP/1.1") || buffer_string.length() < string_length("HTTP/1.1 ") + status_code_size) {
+    if (!buffer_string.starts_with("HTTP/1.1") ||
+        buffer_string.length() < string_length("HTTP/1.1 ") + status_code_size) {
         return std::unexpected(HttpsParseResult::Failure);
     }
 
@@ -169,21 +169,16 @@ std::expected<HttpResponse, HttpsParseResult> parse_response(const std::array<ch
         return std::unexpected(HttpsParseResult::Failure);
     }
 
-    auto content_length_view = find_header_value(buffer_string, "Content-Length");
+    std::optional<std::string_view> content_length_view =
+        find_header_value(buffer_string, "Content-Length");
     uint16_t content_length;
     if (!content_length_view || !try_parse_number(*content_length_view, content_length)) {
         std::cerr << "Failed to parse Content-Length\n";
         return std::unexpected(HttpsParseResult::Failure);
     }
 
-   
-    auto content_type_view = find_header_value(buffer_string, "Content-Type");
-    if (!content_type_view) {
-        std::cerr << "Failed to parse Content-Type\n";
-        return std::unexpected(HttpsParseResult::Failure);
-    }
-
-    std::string content_type(*content_type_view);
+    std::optional<std::string_view> content_type_view =
+        find_header_value(buffer_string, "Content-Type");
 
     auto headers_end = buffer_string.find("\r\n\r\n");
     if (headers_end == std::string::npos) {
@@ -193,11 +188,14 @@ std::expected<HttpResponse, HttpsParseResult> parse_response(const std::array<ch
 
     auto body_start = headers_end + string_length("\r\n\r\n");
 
-    std::string_view body(buffer_string.begin() + headers_end + string_length("\r\n\r\n"), std::min(static_cast<size_t>(content_length), BufferSize));
-    
-    return HttpResponse{.status_code = status_code, .content_length = content_length, .content_type = content_type, .body = body};
-}
+    std::string_view body(buffer_string.begin() + headers_end + string_length("\r\n\r\n"),
+                          std::min(static_cast<size_t>(content_length), buffer.size()));
 
+    return HttpResponse{.status_code = status_code,
+                        .content_length = content_length,
+                        .content_type = content_type_view,
+                        .body = body};
+}
 
 } // namespace http
 

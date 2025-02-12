@@ -34,7 +34,7 @@ static bool parse_collection_string(const std::basic_string_view<char> &service_
     return true;
 }
 
-static bool parse_date(const std::string &date_time_string, Date &out_date) {
+static bool parse_date(const std::string_view &date_time_string, Date &out_date) {
     // We receive dates in the format DD/MM/YYYY 00:00:00
     // We don't care about the time
 

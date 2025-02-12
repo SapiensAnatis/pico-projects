@@ -1,5 +1,6 @@
 #include <array>
 #include <iostream>
+#include <span>
 #include <string>
 
 #include "./util.hpp"
@@ -42,10 +43,11 @@ bool connect_wifi() {
 /// @param address The address to fetch collection data for.
 /// @param response_buffer
 /// @return True if the loop succeeded, otherwise false.
-template <size_t BufferSize>
-bool work_loop(const std::string address, std::array<char, BufferSize> &response_buffer) {
+bool work_loop(const std::string &address, std::span<char> &response_buffer) {
+    using namespace std::literals;
+
     // Zero out buffer to avoid being able to read uninitialized memory via Content-Length attacks
-    response_buffer.fill(0);
+    std::fill(response_buffer.begin(), response_buffer.end(), 0);
 
     http::HttpsGetResult fetch_result = http::fetch_collection_data(address, response_buffer);
     if (fetch_result != http::HttpsGetResult::Success) {
@@ -54,34 +56,39 @@ bool work_loop(const std::string address, std::array<char, BufferSize> &response
         return false;
     }
 
-    std::expected<http::HttpResponse, http::HttpsParseResult> response_parse_result = http::parse_response(response_buffer);
+    std::expected<http::HttpResponse, http::HttpsParseResult> response_parse_result =
+        http::parse_response(response_buffer);
     if (!response_parse_result.has_value()) {
-        std::cout << "Failed to parse collection data: error=" << static_cast<int32_t>(response_parse_result.error()) 
-                  << "\n";
+        std::cout << "Failed to parse collection data: error="
+                  << static_cast<int32_t>(response_parse_result.error()) << "\n";
         return false;
     }
 
     auto response = *response_parse_result;
 
     if (response.status_code != 200) {
-        std::cout << "Failed to parse collection data: received non-200 status code: " << response.status_code << "\n";
+        std::cout << "Failed to parse collection data: received non-200 status code: "
+                  << response.status_code << "\n";
         return false;
     }
-    
+
     if (response.content_type != "application/json") {
-        std::cout << "Failed to parse collection data: non 'application/json' Content-Type: '" << response.content_type << "'\n";
+        std::cout << "Failed to parse collection data: non 'application/json' Content-Type: '"
+                  << response.content_type.value_or("undefined"sv) << "'\n";
         return false;
     }
 
-    if (response.content_length > BufferSize) {
-        // The actual buffer overflow is guarded against in tls_client.c, however we should still check the header
-        // to detect that the buffer does not contain the complete response.
-        std::cout << "Failed to parse collection data: Content-Length of " << static_cast<int32_t>(response.content_length) 
-                  << " exceeds buffer size of " << static_cast<int32_t>(BufferSize) << "\n";
+    if (response.content_length > response_buffer.size()) {
+        // The actual buffer overflow is guarded against in tls_client.c, however we should still
+        // check the header to detect that the buffer does not contain the complete response.
+        std::cout << "Failed to parse collection data: Content-Length of "
+                  << static_cast<int32_t>(response.content_length) << " exceeds buffer size of "
+                  << static_cast<int32_t>(response_buffer.size()) << "\n";
         return false;
     }
 
-    std::expected<parsing::BinCollectionPair, parsing::ParseError> parse_result = parsing::parse_response(response.body);
+    std::expected<parsing::BinCollectionPair, parsing::ParseError> parse_result =
+        parsing::parse_response(response.body);
 
     if (!parse_result.has_value()) {
         std::cout << "Failed to parse collection data: error="
@@ -114,10 +121,16 @@ int main() {
 
     std::string address = url_encode(BIN_UNICORN_HOME_ADDRESS);
 
-    std::array<char, RESPONSE_BUFFER_SIZE> response_buffer;
+    char *response_buffer_ptr = (char *)malloc(RESPONSE_BUFFER_SIZE);
+    if (response_buffer_ptr == nullptr) {
+        std::cerr << "Failed to allocate response buffer\n";
+        return 1;
+    }
+
+    std::span<char> response_buffer(response_buffer_ptr, RESPONSE_BUFFER_SIZE);
 
     while (true) {
-        bool success = work_loop<RESPONSE_BUFFER_SIZE>(address, response_buffer);
+        bool success = work_loop(address, response_buffer);
         if (success) {
             // TODO: If the device is started in the day prior to the collection data changing,
             // sleeping here could lead to stale data being displayed. Consider using NTP instead to
@@ -134,6 +147,7 @@ int main() {
     }
 
     cyw43_arch_deinit();
+    delete response_buffer_ptr;
 
     return 0;
 }
